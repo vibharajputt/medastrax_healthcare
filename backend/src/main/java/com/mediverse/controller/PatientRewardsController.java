@@ -46,9 +46,8 @@ public class PatientRewardsController {
             LocalDate today = LocalDate.now();
             LocalDate lastDate = profile.getLastChecklistDate();
 
-            // Reset checklist if it's a new day
+            // new day - reset the checkboxes
             if (lastDate == null || !lastDate.equals(today)) {
-                // If it is a completely new day, we reset checkbox state in database before applying updates
                 profile.setMedsChecked(false);
                 profile.setDietChecked(false);
                 profile.setExerciseChecked(false);
@@ -60,44 +59,39 @@ public class PatientRewardsController {
 
             int expDiff = 0;
 
-            // Medicine: +10 EXP
             if (reqMeds && !profile.getMedsChecked()) {
                 expDiff += 10;
             } else if (!reqMeds && profile.getMedsChecked()) {
                 expDiff -= 10;
             }
 
-            // Diet: +15 EXP
             if (reqDiet && !profile.getDietChecked()) {
                 expDiff += 15;
             } else if (!reqDiet && profile.getDietChecked()) {
                 expDiff -= 15;
             }
 
-            // Exercise: +20 EXP
             if (reqExercise && !profile.getExerciseChecked()) {
                 expDiff += 20;
             } else if (!reqExercise && profile.getExerciseChecked()) {
                 expDiff -= 20;
             }
 
-            // Apply updates
             profile.setMedsChecked(reqMeds);
             profile.setDietChecked(reqDiet);
             profile.setExerciseChecked(reqExercise);
             profile.setExpPoints(Math.max(0, profile.getExpPoints() + expDiff));
 
-            // Check if all are completed to handle streaks
             boolean allChecked = reqMeds && reqDiet && reqExercise;
-            boolean wasAllChecked = lastDate != null && lastDate.equals(today) && 
-                                   profile.getMedsChecked() && profile.getDietChecked() && profile.getExerciseChecked();
+            boolean wasAllChecked = lastDate != null && lastDate.equals(today)
+                    && profile.getMedsChecked() && profile.getDietChecked() && profile.getExerciseChecked();
 
             if (allChecked && !wasAllChecked) {
                 if (lastDate == null) {
                     profile.setStreakDays(1);
                 } else if (lastDate.equals(today.minusDays(1))) {
                     profile.setStreakDays(profile.getStreakDays() + 1);
-                    // 7-day streak bonus: +100 EXP
+                    // 7-day streak bonus
                     if (profile.getStreakDays() % 7 == 0) {
                         profile.setExpPoints(profile.getExpPoints() + 100);
                     }
@@ -111,15 +105,15 @@ public class PatientRewardsController {
 
             patientProfileRepository.save(profile);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("expPoints", profile.getExpPoints());
-            response.put("streakDays", profile.getStreakDays());
-            response.put("medsChecked", profile.getMedsChecked());
-            response.put("dietChecked", profile.getDietChecked());
-            response.put("exerciseChecked", profile.getExerciseChecked());
-            response.put("lastChecklistDate", profile.getLastChecklistDate().toString());
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("expPoints", profile.getExpPoints());
+            resp.put("streakDays", profile.getStreakDays());
+            resp.put("medsChecked", profile.getMedsChecked());
+            resp.put("dietChecked", profile.getDietChecked());
+            resp.put("exerciseChecked", profile.getExerciseChecked());
+            resp.put("lastChecklistDate", profile.getLastChecklistDate().toString());
 
-            return ResponseEntity.ok(ApiResponse.success("Daily checklist updated!", response));
+            return ResponseEntity.ok(ApiResponse.success("Daily checklist updated!", resp));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
@@ -137,7 +131,7 @@ public class PatientRewardsController {
 
             for (PatientProfile profile : profiles) {
                 if (profile.getUser() == null) continue;
-                
+
                 Map<String, Object> entry = new HashMap<>();
                 entry.put("name", profile.getUser().getName());
                 entry.put("exp", profile.getExpPoints());

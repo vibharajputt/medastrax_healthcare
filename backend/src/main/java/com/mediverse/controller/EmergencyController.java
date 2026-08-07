@@ -26,7 +26,8 @@ public class EmergencyController {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
-    private final java.util.concurrent.ScheduledExecutorService scheduler = java.util.concurrent.Executors.newScheduledThreadPool(1);
+    private final java.util.concurrent.ScheduledExecutorService scheduler =
+            java.util.concurrent.Executors.newScheduledThreadPool(1);
 
     @PostMapping("/sos")
     public ResponseEntity<?> triggerSOS(
@@ -47,38 +48,38 @@ public class EmergencyController {
             String trackingLink = request.getTrackingLink();
             if (trackingLink != null) {
                 String localIp = getLocalIpAddress();
-                trackingLink = trackingLink.replace("localhost", localIp).replace("127.0.0.1", localIp);
+                trackingLink = trackingLink
+                        .replace("localhost", localIp)
+                        .replace("127.0.0.1", localIp);
             }
 
-            String senderName = "MedAstraX";
+            String hospitalName = request.getHospitalName() != null
+                    ? request.getHospitalName() : "Nearest Hospital";
+            String trackingText = trackingLink != null ? trackingLink : "Location unavailable";
+
             String messageBody = String.format(
-                    "%s EMERGENCY ALERT 🚨\n" +
+                    "MedAstraX EMERGENCY ALERT 🚨\n" +
                     "Patient: %s\n" +
                     "Hospital: %s\n" +
                     "Live Tracking: %s\n" +
                     "Act immediately!",
-                    senderName,
-                    user.getName(),
-                    request.getHospitalName() != null ? request.getHospitalName() : "Nearest Hospital",
-                    trackingLink != null ? trackingLink : "Location unavailable"
+                    user.getName(), hospitalName, trackingText
             );
 
-            // Trigger Twilio SMS
             if (emergencyContact != null && !emergencyContact.trim().isEmpty()) {
                 twilioSmsService.sendSms(emergencyContact, messageBody);
 
-                // Trigger Twilio Voice Call to wake them up
                 try {
-                    String voiceMessage = String.format(
+                    String voiceMsg = String.format(
                             "This is an urgent emergency alert from MedAstraX. %s needs immediate medical help. " +
                             "They have been dispatched to %s. " +
                             "Please check your text messages immediately for the live ambulance tracking link and take action now.",
                             user.getName(),
                             request.getHospitalName() != null ? request.getHospitalName() : "the nearest hospital"
                     );
-                    twilioSmsService.makeVoiceCall(emergencyContact, voiceMessage);
+                    twilioSmsService.makeVoiceCall(emergencyContact, voiceMsg);
                 } catch (Exception ex) {
-                    System.err.println("❌ Failed to initiate Twilio Voice Call: " + ex.getMessage());
+                    System.err.println("Failed to initiate voice call: " + ex.getMessage());
                 }
             }
 
@@ -89,38 +90,40 @@ public class EmergencyController {
 
             return ResponseEntity.ok(ApiResponse.success("SOS Alert dispatched successfully!", result));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("Failed to trigger SOS alert: " + e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to trigger SOS alert: " + e.getMessage()));
         }
     }
 
     private String getLocalIpAddress() {
         try {
-            java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
-            String fallbackIp = null;
+            java.util.Enumeration<java.net.NetworkInterface> interfaces =
+                    java.net.NetworkInterface.getNetworkInterfaces();
+            String fallback = null;
+
             while (interfaces.hasMoreElements()) {
                 java.net.NetworkInterface iface = interfaces.nextElement();
                 if (iface.isLoopback() || !iface.isUp()) continue;
 
                 String displayName = iface.getDisplayName().toLowerCase();
                 String name = iface.getName().toLowerCase();
-                
+
                 boolean isVirtual = false;
-                for (String keyword : new String[]{"virtual", "switch", "wsl", "vmware", "virtualbox", "host-only", "docker", "vbox", "vpn", "bluetooth"}) {
-                    if (displayName.contains(keyword) || name.contains(keyword)) {
+                for (String kw : new String[]{"virtual", "switch", "wsl", "vmware", "virtualbox",
+                        "host-only", "docker", "vbox", "vpn", "bluetooth"}) {
+                    if (displayName.contains(kw) || name.contains(kw)) {
                         isVirtual = true;
                         break;
                     }
                 }
 
-                java.util.Enumeration<java.net.InetAddress> addresses = iface.getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    java.net.InetAddress addr = addresses.nextElement();
+                java.util.Enumeration<java.net.InetAddress> addrs = iface.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    java.net.InetAddress addr = addrs.nextElement();
                     if (addr instanceof java.net.Inet4Address) {
                         String ip = addr.getHostAddress();
                         if (isVirtual) {
-                            if (fallbackIp == null) {
-                                fallbackIp = ip;
-                            }
+                            if (fallback == null) fallback = ip;
                         } else {
                             if (ip.startsWith("192.168.") || ip.startsWith("10.") || ip.startsWith("172.")) {
                                 return ip;
@@ -129,7 +132,8 @@ public class EmergencyController {
                     }
                 }
             }
-            if (fallbackIp != null) return fallbackIp;
+
+            if (fallback != null) return fallback;
             return java.net.InetAddress.getLocalHost().getHostAddress();
         } catch (Exception e) {
             return "127.0.0.1";

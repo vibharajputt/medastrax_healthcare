@@ -5,11 +5,11 @@ import com.mediverse.model.FamilyMember;
 import com.mediverse.model.User;
 import com.mediverse.model.Booking;
 import com.mediverse.model.Prescription;
-import com.mediverse.repository.FamilyMemberRepository;
-import com.mediverse.repository.BookingRepository;
-import com.mediverse.repository.PrescriptionRepository;
-import com.mediverse.repository.PharmacyMedicineRepository;
 import com.mediverse.model.PharmacyMedicine;
+import com.mediverse.repository.BookingRepository;
+import com.mediverse.repository.FamilyMemberRepository;
+import com.mediverse.repository.PharmacyMedicineRepository;
+import com.mediverse.repository.PrescriptionRepository;
 import com.mediverse.security.JwtTokenProvider;
 import com.mediverse.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,7 @@ public class FamilyMemberController {
             @RequestBody Map<String, Object> payload,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long userId = getUserIdFromToken(authHeader);
+            Long userId = extractUserId(authHeader);
             User user = authService.getUserById(userId);
 
             String name = (String) payload.get("name");
@@ -77,7 +77,8 @@ public class FamilyMemberController {
 
             if (emergencyNumber != null && !emergencyNumber.trim().isEmpty()) {
                 if (!emergencyNumber.trim().matches("^\\d{10}$")) {
-                    return ResponseEntity.badRequest().body(ApiResponse.error("Emergency contact number must be exactly 10 digits"));
+                    return ResponseEntity.badRequest()
+                            .body(ApiResponse.error("Emergency contact number must be exactly 10 digits"));
                 }
             }
 
@@ -107,7 +108,7 @@ public class FamilyMemberController {
     @GetMapping
     public ResponseEntity<?> getFamilyMembers(@RequestHeader("Authorization") String authHeader) {
         try {
-            Long userId = getUserIdFromToken(authHeader);
+            Long userId = extractUserId(authHeader);
             List<FamilyMember> members = familyMemberRepository.findByUserIdOrderByCreatedAtDesc(userId);
             return ResponseEntity.ok(members.stream().map(this::toMap).collect(Collectors.toList()));
         } catch (Exception e) {
@@ -120,7 +121,7 @@ public class FamilyMemberController {
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long userId = getUserIdFromToken(authHeader);
+            Long userId = extractUserId(authHeader);
             FamilyMember member = familyMemberRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Family member not found"));
 
@@ -128,7 +129,7 @@ public class FamilyMemberController {
                 return ResponseEntity.status(403).body(ApiResponse.error("Access denied"));
             }
 
-            // 1. Delete all bookings associated with this family member (and their prescriptions + pharmacy medicines)
+            // Delete bookings and their related data
             List<Booking> bookings = bookingRepository.findByPatientIdAndFamilyMemberIdOrderByCreatedAtDesc(userId, id);
             for (Booking booking : bookings) {
                 List<Prescription> prescriptions = prescriptionRepository.findByBookingId(booking.getId());
@@ -140,15 +141,15 @@ public class FamilyMemberController {
             }
             bookingRepository.deleteAll(bookings);
 
-            // 2. Delete any orphaned prescriptions directly matching the family member (and their pharmacy medicines)
-            List<Prescription> prescriptions = prescriptionRepository.findByPatientIdAndFamilyMemberIdOrderByCreatedAtDesc(userId, id);
-            for (Prescription prescription : prescriptions) {
-                List<PharmacyMedicine> pmList = pharmacyMedicineRepository.findByPrescriptionId(prescription.getId());
+            // Delete any remaining prescriptions directly tied to this family member
+            List<Prescription> remainingPrescriptions = prescriptionRepository
+                    .findByPatientIdAndFamilyMemberIdOrderByCreatedAtDesc(userId, id);
+            for (Prescription p : remainingPrescriptions) {
+                List<PharmacyMedicine> pmList = pharmacyMedicineRepository.findByPrescriptionId(p.getId());
                 pharmacyMedicineRepository.deleteAll(pmList);
             }
-            prescriptionRepository.deleteAll(prescriptions);
+            prescriptionRepository.deleteAll(remainingPrescriptions);
 
-            // 3. Delete the family member record
             familyMemberRepository.delete(member);
             return ResponseEntity.ok(ApiResponse.success("Family member removed successfully"));
         } catch (Exception e) {
@@ -157,28 +158,27 @@ public class FamilyMemberController {
     }
 
     private Map<String, Object> toMap(FamilyMember member) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", member.getId());
-        map.put("name", member.getName());
-        map.put("age", member.getAge());
-        map.put("gender", member.getGender());
-        map.put("relation", member.getRelation());
-        map.put("phone", member.getPhone());
-        map.put("dob", member.getDob());
-        map.put("bloodGroup", member.getBloodGroup());
-        map.put("emergencyNumber", member.getEmergencyNumber());
-        map.put("preferredLanguage", member.getPreferredLanguage());
-        map.put("existingMedicalCondition", member.getExistingMedicalCondition());
-        map.put("idProof", member.getIdProof());
-        map.put("allergies", member.getAllergies());
-        map.put("currentMedication", member.getCurrentMedication());
-        return map;
+        Map<String, Object> m = new HashMap<>();
+        m.put("id", member.getId());
+        m.put("name", member.getName());
+        m.put("age", member.getAge());
+        m.put("gender", member.getGender());
+        m.put("relation", member.getRelation());
+        m.put("phone", member.getPhone());
+        m.put("dob", member.getDob());
+        m.put("bloodGroup", member.getBloodGroup());
+        m.put("emergencyNumber", member.getEmergencyNumber());
+        m.put("preferredLanguage", member.getPreferredLanguage());
+        m.put("existingMedicalCondition", member.getExistingMedicalCondition());
+        m.put("idProof", member.getIdProof());
+        m.put("allergies", member.getAllergies());
+        m.put("currentMedication", member.getCurrentMedication());
+        return m;
     }
 
-    private Long getUserIdFromToken(String authHeader) {
+    private Long extractUserId(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String email = tokenProvider.getEmailFromToken(token);
-        User user = authService.getUserByEmail(email);
-        return user.getId();
+        return authService.getUserByEmail(email).getId();
     }
 }

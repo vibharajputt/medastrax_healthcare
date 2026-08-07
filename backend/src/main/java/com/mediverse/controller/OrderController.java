@@ -31,12 +31,11 @@ public class OrderController {
             @RequestBody Map<String, Object> payload,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long patientId = getUserIdFromToken(authHeader);
+            Long patientId = extractUserId(authHeader);
             String pharmacyName = (String) payload.get("pharmacyName");
             String medicinesJson = (String) payload.get("medicinesJson");
             String deliveryAddress = (String) payload.get("deliveryAddress");
 
-            // Optional billing fields — safe to be null for backward compatibility
             Double medicineAmount = payload.get("medicineAmount") != null
                     ? ((Number) payload.get("medicineAmount")).doubleValue() : null;
             Double deliveryCharges = payload.get("deliveryCharges") != null
@@ -44,8 +43,8 @@ public class OrderController {
             Double totalAmount = payload.get("totalAmount") != null
                     ? ((Number) payload.get("totalAmount")).doubleValue() : null;
 
-            Order order = orderService.createOrder(patientId, pharmacyName, medicinesJson, deliveryAddress,
-                    medicineAmount, deliveryCharges, totalAmount);
+            Order order = orderService.createOrder(patientId, pharmacyName, medicinesJson,
+                    deliveryAddress, medicineAmount, deliveryCharges, totalAmount);
             return ResponseEntity.ok(ApiResponse.success("Order created successfully", toMap(order)));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
@@ -55,7 +54,7 @@ public class OrderController {
     @GetMapping("/patient")
     public ResponseEntity<?> getPatientOrders(@RequestHeader("Authorization") String authHeader) {
         try {
-            Long patientId = getUserIdFromToken(authHeader);
+            Long patientId = extractUserId(authHeader);
             List<Order> orders = orderService.getOrdersByPatient(patientId);
             return ResponseEntity.ok(orders.stream().map(this::toMap).collect(Collectors.toList()));
         } catch (Exception e) {
@@ -90,26 +89,24 @@ public class OrderController {
     }
 
     private Map<String, Object> toMap(Order order) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", order.getId());
-        map.put("patientId", order.getPatient().getId());
-        map.put("patientName", order.getPatient().getName());
-        map.put("pharmacyName", order.getPharmacyName());
-        map.put("medicines", order.getMedicinesJson());
-        map.put("status", order.getStatus());
-        map.put("deliveryAddress", order.getDeliveryAddress());
-        map.put("createdAt", order.getCreatedAt().toString());
-        // Billing fields (may be null for legacy orders)
-        map.put("medicineAmount", order.getMedicineAmount());
-        map.put("deliveryCharges", order.getDeliveryCharges());
-        map.put("totalAmount", order.getTotalAmount());
-        return map;
+        Map<String, Object> m = new HashMap<>();
+        m.put("id", order.getId());
+        m.put("patientId", order.getPatient().getId());
+        m.put("patientName", order.getPatient().getName());
+        m.put("pharmacyName", order.getPharmacyName());
+        m.put("medicines", order.getMedicinesJson());
+        m.put("status", order.getStatus());
+        m.put("deliveryAddress", order.getDeliveryAddress());
+        m.put("createdAt", order.getCreatedAt().toString());
+        m.put("medicineAmount", order.getMedicineAmount());
+        m.put("deliveryCharges", order.getDeliveryCharges());
+        m.put("totalAmount", order.getTotalAmount());
+        return m;
     }
 
-    private Long getUserIdFromToken(String authHeader) {
+    private Long extractUserId(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String email = tokenProvider.getEmailFromToken(token);
-        User user = authService.getUserByEmail(email);
-        return user.getId();
+        return authService.getUserByEmail(email).getId();
     }
 }

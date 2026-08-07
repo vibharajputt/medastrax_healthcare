@@ -2,19 +2,20 @@ package com.mediverse.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/webrtc")
 public class WebRtcSignalingController {
 
-    // Map of bookingId -> participantRole -> signalData
+    // bookingId -> role -> signal data
     private final Map<String, Map<String, Object>> signals = new ConcurrentHashMap<>();
-    
-    // Map of bookingId -> participantRole -> list of ICE candidates
+
+    // bookingId -> role -> ICE candidates list
     private final Map<String, Map<String, List<Object>>> iceCandidates = new ConcurrentHashMap<>();
 
     @PostMapping("/{bookingId}/signal")
@@ -52,10 +53,9 @@ public class WebRtcSignalingController {
     public ResponseEntity<?> getIceCandidates(
             @PathVariable String bookingId,
             @RequestParam String otherRole) {
-        Map<String, List<Object>> bookingCandidates = iceCandidates.get(bookingId);
-        if (bookingCandidates != null && bookingCandidates.containsKey(otherRole)) {
-            List<Object> candidates = new ArrayList<>(bookingCandidates.get(otherRole));
-            return ResponseEntity.ok(candidates);
+        Map<String, List<Object>> candidates = iceCandidates.get(bookingId);
+        if (candidates != null && candidates.containsKey(otherRole)) {
+            return ResponseEntity.ok(new ArrayList<>(candidates.get(otherRole)));
         }
         return ResponseEntity.ok(new ArrayList<>());
     }

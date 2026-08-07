@@ -4,13 +4,13 @@ import com.mediverse.dto.ApiResponse;
 import com.mediverse.dto.HospitalRequest;
 import com.mediverse.dto.HospitalResponse;
 import com.mediverse.model.User;
+import com.mediverse.security.JwtTokenProvider;
 import com.mediverse.service.AuthService;
 import com.mediverse.service.HospitalService;
-import com.mediverse.security.JwtTokenProvider;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -61,7 +61,7 @@ public class HospitalController {
             @Valid @RequestBody HospitalRequest request,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long doctorId = getUserIdFromToken(authHeader);
+            Long doctorId = extractUserId(authHeader);
             HospitalResponse response = hospitalService.createHospital(request, doctorId);
             return ResponseEntity.ok(ApiResponse.success("Hospital created successfully", response));
         } catch (RuntimeException e) {
@@ -75,7 +75,7 @@ public class HospitalController {
             @Valid @RequestBody HospitalRequest request,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long doctorId = getUserIdFromToken(authHeader);
+            Long doctorId = extractUserId(authHeader);
             HospitalResponse response = hospitalService.updateHospital(id, request, doctorId);
             return ResponseEntity.ok(ApiResponse.success("Hospital updated successfully", response));
         } catch (RuntimeException e) {
@@ -89,19 +89,12 @@ public class HospitalController {
             @RequestParam Integer availableBeds,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long doctorId = getUserIdFromToken(authHeader);
+            Long doctorId = extractUserId(authHeader);
             hospitalService.updateBedAvailability(id, availableBeds, doctorId);
             return ResponseEntity.ok(ApiResponse.success("Bed availability updated"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
-    }
-
-    private Long getUserIdFromToken(String authHeader) {
-        String token = authHeader.replace("Bearer ", "");
-        String email = tokenProvider.getEmailFromToken(token);
-        User user = authService.getUserByEmail(email);
-        return user.getId();
     }
 
     @PutMapping("/{id}/verify")
@@ -114,5 +107,12 @@ public class HospitalController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
+    }
+
+    private Long extractUserId(String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String email = tokenProvider.getEmailFromToken(token);
+        User user = authService.getUserByEmail(email);
+        return user.getId();
     }
 }

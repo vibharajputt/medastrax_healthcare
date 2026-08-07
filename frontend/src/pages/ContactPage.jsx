@@ -4,7 +4,6 @@ import { FiSend, FiUser, FiMail, FiPhone, FiMessageSquare, FiMapPin, FiClock, Fi
 import './ContactPage.css';
 import ScrollReveal from '../components/common/ScrollReveal';
 
-// ── Animation Variants ────────────────────────────────────────────────────────
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: (i = 0) => ({
@@ -20,62 +19,61 @@ const containerVariants = {
     transition: { staggerChildren: 0.13 }
   }
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function ContactPage() {
-  const [form, setForm] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     purpose: '',
     message: ''
   });
-  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleChange = (e) => {
     let value = e.target.value;
     if (e.target.name === 'phone') {
       value = value.replace(/\D/g, '').slice(0, 10);
     }
-    setForm({ ...form, [e.target.name]: value });
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (form.phone && form.phone.length > 0 && form.phone.length !== 10) {
-      alert('Phone number must be exactly 10 digits (or leave it empty).');
+    if (formData.phone && formData.phone.length > 0 && formData.phone.length !== 10) {
+      alert('Phone number must be exactly 10 digits if you provide it.');
       return;
     }
-    const targetUrl = import.meta.env.VITE_API_URL
-      ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/contact`
+    const apiBase = import.meta.env.VITE_API_URL
+      ? import.meta.env.VITE_API_URL.replace(/\/$/, '')
       : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:8083/api/contact'
-        : 'https://mediverse-ke9x.onrender.com/api/contact');
+        ? 'http://localhost:8083/api'
+        : 'https://mediverse-ke9x.onrender.com/api');
+    
+    const targetUrl = `${apiBase}/contact`;
 
     fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(form)
+      body: JSON.stringify(formData)
     })
       .then(async response => {
         if (response.ok) {
-          setSubmitted(true);
-          setTimeout(() => setSubmitted(false), 4000);
-          setForm({ name: '', email: '', phone: '', purpose: '', message: '' });
+          setIsSubmitted(true);
+          setTimeout(() => setIsSubmitted(false), 4000);
+          setFormData({ name: '', email: '', phone: '', purpose: '', message: '' });
         } else {
           const data = await response.json().catch(() => null);
-          const errMsg = data?.error || data?.message || 'Failed to send message. Please try again.';
+          const errMsg = data?.error || data?.message || 'Failed to send message.';
           alert(errMsg);
         }
       })
       .catch(error => {
-        console.error('Error submitting contact form:', error);
-        // Still show success to user — message is logged in backend
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 4000);
-        setForm({ name: '', email: '', phone: '', purpose: '', message: '' });
+        setIsSubmitted(true);
+        setTimeout(() => setIsSubmitted(false), 4000);
+        setFormData({ name: '', email: '', phone: '', purpose: '', message: '' });
       });
   };
 
@@ -86,14 +84,13 @@ export default function ContactPage() {
   ];
 
   const formFields = [
-    { id: 'contact-name', icon: <FiUser />, label: 'Name', type: 'text', name: 'name', val: form.name, ph: 'John Doe', req: true },
-    { id: 'contact-email', icon: <FiMail />, label: 'Email', type: 'email', name: 'email', val: form.email, ph: 'john@example.com', req: true },
-    { id: 'contact-phone', icon: <FiPhone />, label: 'Phone Number', type: 'tel', name: 'phone', val: form.phone, ph: '+91 1234567890', req: true },
+    { id: 'contact-name', icon: <FiUser />, label: 'Name', type: 'text', name: 'name', val: formData.name, ph: 'John Doe', req: true },
+    { id: 'contact-email', icon: <FiMail />, label: 'Email', type: 'email', name: 'email', val: formData.email, ph: 'john@example.com', req: true },
+    { id: 'contact-phone', icon: <FiPhone />, label: 'Phone Number', type: 'tel', name: 'phone', val: formData.phone, ph: '+91 1234567890', req: true },
   ];
 
   return (
     <div className="contact-page">
-      {/* Animated background orbs */}
       <div className="contact-bg-effects">
         <div className="contact-orb contact-orb-1"></div>
         <div className="contact-orb contact-orb-2"></div>
@@ -102,7 +99,6 @@ export default function ContactPage() {
 
       <div className="contact-container">
 
-        {/* ── Header ──────────────────────────────────────── */}
         <motion.div
           className="contact-header"
           initial="hidden"
@@ -123,9 +119,7 @@ export default function ContactPage() {
           </motion.p>
         </motion.div>
 
-        {/* ── Body: Info Cards + Form ──────────────────────── */}
         <ScrollReveal className="contact-body">
-          {/* Left: Info Cards */}
           <motion.div
             className="contact-info-panel"
             variants={containerVariants}
@@ -154,7 +148,6 @@ export default function ContactPage() {
               </motion.div>
             ))}
 
-            {/* Decorative quote */}
             <motion.div
               className="contact-quote-box"
               initial={{ opacity: 0, y: 20 }}
@@ -168,7 +161,6 @@ export default function ContactPage() {
             </motion.div>
           </motion.div>
 
-          {/* Right: Form */}
           <motion.div
             className="contact-form-panel"
             initial={{ opacity: 0, x: 50 }}
@@ -177,7 +169,7 @@ export default function ContactPage() {
             viewport={{ once: false, margin: '-60px' }}
           >
             <div className="contact-form-card glass-card">
-              {submitted ? (
+              {isSubmitted ? (
                 <motion.div
                   className="contact-success"
                   initial={{ scale: 0.8, opacity: 0 }}
@@ -235,7 +227,7 @@ export default function ContactPage() {
                     <select
                       id="contact-purpose"
                       name="purpose"
-                      value={form.purpose}
+                      value={formData.purpose}
                       onChange={handleChange}
                       required
                       className="contact-select"
@@ -264,7 +256,7 @@ export default function ContactPage() {
                     <textarea
                       id="contact-message"
                       name="message"
-                      value={form.message}
+                      value={formData.message}
                       onChange={handleChange}
                       placeholder="Type your message here..."
                       required

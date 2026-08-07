@@ -29,6 +29,7 @@ public class User {
     private Long hospitalId;
     private String specialization;
     private String licenseNo;
+
     private String workingHours;
     private String workingDays;
     private Boolean inPersonConsultation;
@@ -58,7 +59,11 @@ public class User {
 
     public User() {}
 
-    public User(Long id, String name, String email, String password, String phone, Role role, Long hospitalId, String specialization, String licenseNo, String workingHours, String workingDays, Boolean inPersonConsultation, Boolean onlineConsultation, String fees, String avatarUrl, String address, String city, String upiId, Double rating, LocalDateTime createdAt) {
+    public User(Long id, String name, String email, String password, String phone,
+                Role role, Long hospitalId, String specialization, String licenseNo,
+                String workingHours, String workingDays, Boolean inPersonConsultation,
+                Boolean onlineConsultation, String fees, String avatarUrl, String address,
+                String city, String upiId, Double rating, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -83,42 +88,69 @@ public class User {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
     public Long getHospitalId() { return hospitalId; }
     public void setHospitalId(Long hospitalId) { this.hospitalId = hospitalId; }
+
     public String getSpecialization() { return specialization; }
     public void setSpecialization(String specialization) { this.specialization = specialization; }
+
     public String getLicenseNo() { return licenseNo; }
     public void setLicenseNo(String licenseNo) { this.licenseNo = licenseNo; }
+
     public String getWorkingHours() { return workingHours; }
     public void setWorkingHours(String workingHours) { this.workingHours = workingHours; }
+
     public String getWorkingDays() { return workingDays; }
     public void setWorkingDays(String workingDays) { this.workingDays = workingDays; }
-    public boolean getInPersonConsultation() { return inPersonConsultation != null && inPersonConsultation; }
-    public void setInPersonConsultation(Boolean inPersonConsultation) { this.inPersonConsultation = inPersonConsultation; }
-    public boolean getOnlineConsultation() { return onlineConsultation != null && onlineConsultation; }
-    public void setOnlineConsultation(Boolean onlineConsultation) { this.onlineConsultation = onlineConsultation; }
+
+    public boolean getInPersonConsultation() {
+        return inPersonConsultation != null && inPersonConsultation;
+    }
+    public void setInPersonConsultation(Boolean inPersonConsultation) {
+        this.inPersonConsultation = inPersonConsultation;
+    }
+
+    public boolean getOnlineConsultation() {
+        return onlineConsultation != null && onlineConsultation;
+    }
+    public void setOnlineConsultation(Boolean onlineConsultation) {
+        this.onlineConsultation = onlineConsultation;
+    }
+
     public String getFees() { return fees; }
     public void setFees(String fees) { this.fees = fees; }
+
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+
     public String getUpiId() { return upiId; }
     public void setUpiId(String upiId) { this.upiId = upiId; }
+
     public Double getRating() { return rating; }
     public void setRating(Double rating) { this.rating = rating; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -159,8 +191,8 @@ public class User {
         public UserBuilder licenseNo(String licenseNo) { this.licenseNo = licenseNo; return this; }
         public UserBuilder workingHours(String workingHours) { this.workingHours = workingHours; return this; }
         public UserBuilder workingDays(String workingDays) { this.workingDays = workingDays; return this; }
-        public UserBuilder inPersonConsultation(Boolean inPersonConsultation) { this.inPersonConsultation = inPersonConsultation; return this; }
-        public UserBuilder onlineConsultation(Boolean onlineConsultation) { this.onlineConsultation = onlineConsultation; return this; }
+        public UserBuilder inPersonConsultation(Boolean val) { this.inPersonConsultation = val; return this; }
+        public UserBuilder onlineConsultation(Boolean val) { this.onlineConsultation = val; return this; }
         public UserBuilder fees(String fees) { this.fees = fees; return this; }
         public UserBuilder avatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; return this; }
         public UserBuilder address(String address) { this.address = address; return this; }
@@ -170,7 +202,10 @@ public class User {
         public UserBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
 
         public User build() {
-            return new User(id, name, email, password, phone, role, hospitalId, specialization, licenseNo, workingHours, workingDays, inPersonConsultation, onlineConsultation, fees, avatarUrl, address, city, upiId, rating, createdAt);
+            return new User(id, name, email, password, phone, role, hospitalId,
+                    specialization, licenseNo, workingHours, workingDays,
+                    inPersonConsultation, onlineConsultation, fees, avatarUrl,
+                    address, city, upiId, rating, createdAt);
         }
     }
 }

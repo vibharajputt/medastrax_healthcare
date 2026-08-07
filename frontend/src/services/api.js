@@ -1,18 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
+// figure out base URL based on environment
+const BASE_URL = import.meta.env.VITE_API_URL ||
   ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8083/api'
     : 'https://mediverse-ke9x.onrender.com/api');
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor - attach JWT token
+// attach JWT to every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('medastrax_token');
@@ -21,18 +22,20 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (err) => Promise.reject(err)
 );
 
-// Response interceptor - handle auth errors
+// handle auth errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isAuthEndpoint = error.config?.url?.includes('/auth/login') || 
-                           error.config?.url?.includes('/auth/google-login') || 
-                           error.config?.url?.includes('/auth/signup');
-    
-    if ((error.response?.status === 401 || error.response?.status === 403) && !isAuthEndpoint) {
+    const url = error.config?.url || '';
+    const isAuthRoute = url.includes('/auth/login') ||
+                        url.includes('/auth/google-login') ||
+                        url.includes('/auth/signup');
+
+    const status = error.response?.status;
+    if ((status === 401 || status === 403) && !isAuthRoute) {
       localStorage.removeItem('medastrax_token');
       localStorage.removeItem('medastrax_user');
       localStorage.removeItem('medastrax_active_profile');
@@ -42,7 +45,6 @@ api.interceptors.response.use(
   }
 );
 
-// Auth API
 export const authAPI = {
   signup: (data) => api.post('/auth/signup', data),
   login: (data) => api.post('/auth/login', data),
@@ -63,14 +65,12 @@ export const authAPI = {
   getLabBookings: () => api.get('/auth/lab-bookings'),
 };
 
-// OTP API
 export const otpAPI = {
   sendOtp: (identifier, type) => api.post('/auth/otp/send', { identifier, type }),
   verifyOtp: (identifier, type, otp) => api.post('/auth/otp/verify', { identifier, type, otp }),
   checkStatus: (identifier, type) => api.get(`/auth/otp/status?identifier=${identifier}&type=${type}`),
 };
 
-// Hospital API
 export const hospitalAPI = {
   getAll: () => api.get('/hospitals'),
   getById: (id) => api.get(`/hospitals/${id}`),
@@ -85,20 +85,23 @@ export const hospitalAPI = {
 
 export const bookingAPI = {
   create: (data) => api.post('/bookings', data),
-  getPatientBookings: (familyMemberId) => api.get(`/bookings/patient${familyMemberId ? `?familyMemberId=${familyMemberId}` : ''}`),
+  getPatientBookings: (familyMemberId) =>
+    api.get(`/bookings/patient${familyMemberId ? `?familyMemberId=${familyMemberId}` : ''}`),
   getDoctorBookings: () => api.get('/bookings/doctor'),
   getById: (id) => api.get(`/bookings/${id}`),
   updateStatus: (id, status) => api.put(`/bookings/${id}/status?status=${status}`),
   getAvailableSlots: (doctorId, date) => api.get(`/bookings/slots?doctorId=${doctorId}&date=${date}`),
-  updateMeetingLink: (id, meetingLink) => api.put(`/bookings/${id}/meeting-link?meetingLink=${encodeURIComponent(meetingLink)}`),
+  updateMeetingLink: (id, meetingLink) =>
+    api.put(`/bookings/${id}/meeting-link?meetingLink=${encodeURIComponent(meetingLink)}`),
   updateAiReport: (id, aiReport) => api.put(`/bookings/${id}/ai-report`, { aiReport }),
-  reschedule: (id, date, timeSlot) => api.put(`/bookings/${id}/reschedule?date=${date}&timeSlot=${encodeURIComponent(timeSlot)}`),
+  reschedule: (id, date, timeSlot) =>
+    api.put(`/bookings/${id}/reschedule?date=${date}&timeSlot=${encodeURIComponent(timeSlot)}`),
 };
 
-// Prescription API
 export const prescriptionAPI = {
   create: (data) => api.post('/prescriptions', data),
-  getPatientPrescriptions: (familyMemberId) => api.get(`/prescriptions/patient${familyMemberId ? `?familyMemberId=${familyMemberId}` : ''}`),
+  getPatientPrescriptions: (familyMemberId) =>
+    api.get(`/prescriptions/patient${familyMemberId ? `?familyMemberId=${familyMemberId}` : ''}`),
   getDoctorPrescriptions: () => api.get('/prescriptions/doctor'),
   getById: (id) => api.get(`/prescriptions/${id}`),
   analyze: (id) => api.get(`/prescriptions/${id}/analyze`),
@@ -108,14 +111,12 @@ export const prescriptionAPI = {
   uploadReport: (id, reportUrl) => api.put(`/prescriptions/${id}/upload-report`, { reportUrl }),
 };
 
-// Family Member API
 export const familyMemberAPI = {
   add: (data) => api.post('/family-members', data),
   getAll: () => api.get('/family-members'),
   delete: (id) => api.delete(`/family-members/${id}`),
 };
 
-// Pharmacy API
 export const pharmacyAPI = {
   setPrices: (data) => api.post('/pharmacy/prices', data),
   getMedicines: () => api.get('/pharmacy/medicines'),
@@ -123,11 +124,11 @@ export const pharmacyAPI = {
   getAll: () => api.get('/pharmacy/all'),
   updateProfile: (data) => api.put('/pharmacy/profile', data),
   createOrder: (data) => api.post('/orders', data),
-  getOrdersForPharmacy: (pharmacyName) => api.get(`/orders/pharmacy?pharmacyName=${encodeURIComponent(pharmacyName)}`),
+  getOrdersForPharmacy: (pharmacyName) =>
+    api.get(`/orders/pharmacy?pharmacyName=${encodeURIComponent(pharmacyName)}`),
   updateOrderStatus: (orderId, status) => api.put(`/orders/${orderId}/status`, { status }),
 };
 
-// Lab API
 export const labAPI = {
   getAll: () => api.get('/labs/all'),
   createBooking: (data) => api.post('/labs/bookings', data),
@@ -136,55 +137,51 @@ export const labAPI = {
   getLabBookings: () => api.get('/labs/bookings/lab'),
 };
 
-// Payment API
 export const paymentAPI = {
   createOrder: (data) => api.post('/payments/order', data),
   verifyPayment: (data) => api.post('/payments/verify', data),
 };
 
-// Notifications API
 export const notificationAPI = {
   getNotifications: ({ role, userId } = {}) => {
-    const params = [];
-    if (role) params.push(`role=${encodeURIComponent(role)}`);
-    if (userId) params.push(`userId=${encodeURIComponent(userId)}`);
-    const q = params.length ? `?${params.join('&')}` : '';
-    return api.get(`/notifications${q}`);
+    const parts = [];
+    if (role) parts.push(`role=${encodeURIComponent(role)}`);
+    if (userId) parts.push(`userId=${encodeURIComponent(userId)}`);
+    const qs = parts.length ? `?${parts.join('&')}` : '';
+    return api.get(`/notifications${qs}`);
   }
 };
 
-// File Upload API
 export const fileAPI = {
   upload: (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    return api.post('/upload', formData, {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/upload', form, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   }
 };
 
-// AI API
 export const aiAPI = {
   chat: (message, sessionId) => api.post('/ai/chat', { message, sessionId }),
   resetChat: (sessionId) => api.post('/ai/chat/reset', { sessionId }),
   queryChat: (message, sessionId) => api.post('/ai/query-chat', { message, sessionId }),
   resetQueryChat: (sessionId) => api.post('/ai/query-chat/reset', { sessionId }),
-  analyzeConsultation: (transcript, patientName, doctorName) => api.post('/ai/analyze-consultation', { transcript, patientName, doctorName }),
+  analyzeConsultation: (transcript, patientName, doctorName) =>
+    api.post('/ai/analyze-consultation', { transcript, patientName, doctorName }),
   getCarePlan: () => api.get('/ai/care-plan'),
-  compareReports: (previousReport, currentReport) => api.post('/ai/compare-reports', { previousReport, currentReport }),
+  compareReports: (previousReport, currentReport) =>
+    api.post('/ai/compare-reports', { previousReport, currentReport }),
   analyzePatientReports: () => api.post('/ai/analyze-reports'),
   analyzeBodySymptoms: (data) => api.post('/ai/analyze-body-symptoms', data),
   assessSkinCare: (data) => api.post('/ai/skin-assessment', data),
 };
 
-// Rewards API
 export const rewardsAPI = {
   updateChecklist: (data) => api.post('/rewards/checklist', data),
   getLeaderboard: () => api.get('/rewards/leaderboard'),
 };
 
-// Emergency SOS API
 export const emergencyAPI = {
   triggerSOS: (data) => api.post('/sos', data),
 };

@@ -29,7 +29,7 @@ public class Booking {
     private User patient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "family_member_id", nullable = true)
+    @JoinColumn(name = "family_member_id")
     private FamilyMember familyMember;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,7 +57,6 @@ public class Booking {
     private String notes;
     private String patientName;
     private String patientPhone;
-
     private Integer age;
     private String gender;
 
@@ -71,15 +70,8 @@ public class Booking {
     @Column(columnDefinition = "TEXT")
     private String aiReport;
 
-    /**
-     * Color-coded badge representing overall condition severity for doctor visibility
-     * Values: RED, ORANGE, YELLOW, GREEN
-     */
+    // badge indicating overall patient condition severity - RED/ORANGE/YELLOW/GREEN
     private String conditionBadge;
-
-    /**
-     * Optional short reason shown on UI as tooltip/text.
-     */
     private String conditionBadgeReason;
 
     @Column(columnDefinition = "TEXT")
@@ -104,7 +96,11 @@ public class Booking {
 
     public Booking() {}
 
-    public Booking(Long id, User patient, User doctor, Hospital hospital, LocalDate bookingDate, String timeSlot, BookingStatus status, BookingType type, String notes, String patientName, String patientPhone, Integer age, String gender, String symptoms, String paymentMethod, String paymentStatus, LocalDateTime createdAt) {
+    public Booking(Long id, User patient, User doctor, Hospital hospital,
+                   LocalDate bookingDate, String timeSlot, BookingStatus status,
+                   BookingType type, String notes, String patientName, String patientPhone,
+                   Integer age, String gender, String symptoms, String paymentMethod,
+                   String paymentStatus, LocalDateTime createdAt) {
         this.id = id;
         this.patient = patient;
         this.doctor = doctor;
@@ -126,37 +122,52 @@ public class Booking {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public User getPatient() { return patient; }
     public void setPatient(User patient) { this.patient = patient; }
+
     public FamilyMember getFamilyMember() { return familyMember; }
     public void setFamilyMember(FamilyMember familyMember) { this.familyMember = familyMember; }
+
     public User getDoctor() { return doctor; }
     public void setDoctor(User doctor) { this.doctor = doctor; }
+
     public Hospital getHospital() { return hospital; }
     public void setHospital(Hospital hospital) { this.hospital = hospital; }
+
     public LocalDate getBookingDate() { return bookingDate; }
     public void setBookingDate(LocalDate bookingDate) { this.bookingDate = bookingDate; }
+
     public String getTimeSlot() { return timeSlot; }
     public void setTimeSlot(String timeSlot) { this.timeSlot = timeSlot; }
+
     public BookingStatus getStatus() { return status; }
     public void setStatus(BookingStatus status) { this.status = status; }
+
     public BookingType getType() { return type; }
     public void setType(BookingType type) { this.type = type; }
+
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
     public String getPatientName() { return patientName; }
     public void setPatientName(String patientName) { this.patientName = patientName; }
+
     public String getPatientPhone() { return patientPhone; }
     public void setPatientPhone(String patientPhone) { this.patientPhone = patientPhone; }
 
     public Integer getAge() { return age; }
     public void setAge(Integer age) { this.age = age; }
+
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
+
     public String getSymptoms() { return symptoms; }
     public void setSymptoms(String symptoms) { this.symptoms = symptoms; }
+
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
 
@@ -173,10 +184,14 @@ public class Booking {
     public void setConditionBadge(String conditionBadge) { this.conditionBadge = conditionBadge; }
 
     public String getConditionBadgeReason() { return conditionBadgeReason; }
-    public void setConditionBadgeReason(String conditionBadgeReason) { this.conditionBadgeReason = conditionBadgeReason; }
+    public void setConditionBadgeReason(String conditionBadgeReason) {
+        this.conditionBadgeReason = conditionBadgeReason;
+    }
 
     public String getPreviousPrescriptionSummary() { return previousPrescriptionSummary; }
-    public void setPreviousPrescriptionSummary(String previousPrescriptionSummary) { this.previousPrescriptionSummary = previousPrescriptionSummary; }
+    public void setPreviousPrescriptionSummary(String previousPrescriptionSummary) {
+        this.previousPrescriptionSummary = previousPrescriptionSummary;
+    }
 
     public static BookingBuilder builder() {
         return new BookingBuilder();
@@ -221,13 +236,15 @@ public class Booking {
         public BookingBuilder paymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; return this; }
         public BookingBuilder paymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; return this; }
         public BookingBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
-        public BookingBuilder previousPrescriptionSummary(String previousPrescriptionSummary) { this.previousPrescriptionSummary = previousPrescriptionSummary; return this; }
+        public BookingBuilder previousPrescriptionSummary(String s) { this.previousPrescriptionSummary = s; return this; }
 
         public Booking build() {
-            Booking booking = new Booking(id, patient, doctor, hospital, bookingDate, timeSlot, status, type, notes, patientName, patientPhone, age, gender, symptoms, paymentMethod, paymentStatus, createdAt);
-            booking.setFamilyMember(familyMember);
-            booking.setPreviousPrescriptionSummary(previousPrescriptionSummary);
-            return booking;
+            Booking b = new Booking(id, patient, doctor, hospital, bookingDate, timeSlot, status,
+                    type, notes, patientName, patientPhone, age, gender, symptoms,
+                    paymentMethod, paymentStatus, createdAt);
+            b.setFamilyMember(familyMember);
+            b.setPreviousPrescriptionSummary(previousPrescriptionSummary);
+            return b;
         }
     }
 }

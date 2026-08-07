@@ -35,8 +35,7 @@ public class AuthController {
             AuthResponse response = authService.signup(request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -46,8 +45,7 @@ public class AuthController {
             AuthResponse response = authService.login(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Invalid email or password"));
+            return ResponseEntity.badRequest().body(ApiResponse.error("Invalid email or password"));
         }
     }
 
@@ -80,11 +78,9 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String token) {
         try {
-            // This endpoint is protected by JWT filter
             return ResponseEntity.ok(ApiResponse.success("Authenticated"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -95,48 +91,48 @@ public class AuthController {
             String email = tokenProvider.getEmailFromToken(token);
             User user = authService.getUserByEmail(email);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", user.getId());
-            response.put("name", user.getName());
-            response.put("email", user.getEmail());
-            response.put("phone", user.getPhone());
-            response.put("role", user.getRole().name());
-            response.put("city", user.getCity());
-            response.put("address", user.getAddress());
-            response.put("avatarUrl", user.getAvatarUrl());
-            response.put("hospitalId", user.getHospitalId());
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("id", user.getId());
+            resp.put("name", user.getName());
+            resp.put("email", user.getEmail());
+            resp.put("phone", user.getPhone());
+            resp.put("role", user.getRole().name());
+            resp.put("city", user.getCity());
+            resp.put("address", user.getAddress());
+            resp.put("avatarUrl", user.getAvatarUrl());
+            resp.put("hospitalId", user.getHospitalId());
 
             if (user.getRole() == User.Role.PATIENT) {
                 PatientProfile profile = authService.getPatientProfile(user.getId());
                 if (profile != null) {
-                    response.put("dob", profile.getDob());
-                    response.put("age", profile.getAge());
-                    response.put("gender", profile.getGender());
-                    response.put("bloodGroup", profile.getBloodGroup());
-                    response.put("emergencyNumber", profile.getEmergencyNumber());
-                    response.put("preferredLanguage", profile.getPreferredLanguage());
-                    response.put("existingMedicalCondition", profile.getExistingMedicalCondition());
-                    response.put("idProof", profile.getIdProof());
-                    response.put("currentMedication", profile.getCurrentMedication());
-                    response.put("allergies", profile.getAllergies());
-                    response.put("isFirstTimeUser", profile.getIsFirstTimeUser());
-                    response.put("prescriptionReportUrl", profile.getPrescriptionReportUrl());
-                    response.put("expPoints", profile.getExpPoints());
-                    response.put("streakDays", profile.getStreakDays());
-                    response.put("healthBadge", profile.getHealthBadge());
-                    response.put("lastAnalysis", profile.getLastAnalysis());
-                    response.put("carePlan", profile.getCarePlan());
-                    response.put("lastChecklistDate", profile.getLastChecklistDate() != null ? profile.getLastChecklistDate().toString() : null);
-                    response.put("medsChecked", profile.getMedsChecked());
-                    response.put("dietChecked", profile.getDietChecked());
-                    response.put("exerciseChecked", profile.getExerciseChecked());
+                    resp.put("dob", profile.getDob());
+                    resp.put("age", profile.getAge());
+                    resp.put("gender", profile.getGender());
+                    resp.put("bloodGroup", profile.getBloodGroup());
+                    resp.put("emergencyNumber", profile.getEmergencyNumber());
+                    resp.put("preferredLanguage", profile.getPreferredLanguage());
+                    resp.put("existingMedicalCondition", profile.getExistingMedicalCondition());
+                    resp.put("idProof", profile.getIdProof());
+                    resp.put("currentMedication", profile.getCurrentMedication());
+                    resp.put("allergies", profile.getAllergies());
+                    resp.put("isFirstTimeUser", profile.getIsFirstTimeUser());
+                    resp.put("prescriptionReportUrl", profile.getPrescriptionReportUrl());
+                    resp.put("expPoints", profile.getExpPoints());
+                    resp.put("streakDays", profile.getStreakDays());
+                    resp.put("healthBadge", profile.getHealthBadge());
+                    resp.put("lastAnalysis", profile.getLastAnalysis());
+                    resp.put("carePlan", profile.getCarePlan());
+                    resp.put("lastChecklistDate",
+                            profile.getLastChecklistDate() != null ? profile.getLastChecklistDate().toString() : null);
+                    resp.put("medsChecked", profile.getMedsChecked());
+                    resp.put("dietChecked", profile.getDietChecked());
+                    resp.put("exerciseChecked", profile.getExerciseChecked());
                 }
             }
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(resp);
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -146,47 +142,48 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader) {
         try {
             User user = authService.getUserById(id);
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", user.getId());
-            response.put("name", user.getName());
-            response.put("email", user.getEmail());
-            response.put("phone", user.getPhone());
-            response.put("role", user.getRole().name());
-            response.put("city", user.getCity());
-            response.put("address", user.getAddress());
+
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("id", user.getId());
+            resp.put("name", user.getName());
+            resp.put("email", user.getEmail());
+            resp.put("phone", user.getPhone());
+            resp.put("role", user.getRole().name());
+            resp.put("city", user.getCity());
+            resp.put("address", user.getAddress());
 
             PatientProfile profile = authService.getPatientProfile(user.getId());
             if (profile != null) {
-                response.put("dob", profile.getDob());
-                response.put("age", profile.getAge());
-                response.put("gender", profile.getGender());
-                response.put("bloodGroup", profile.getBloodGroup());
-                response.put("emergencyNumber", profile.getEmergencyNumber());
-                response.put("preferredLanguage", profile.getPreferredLanguage());
-                response.put("existingMedicalCondition", profile.getExistingMedicalCondition());
-                response.put("currentMedication", profile.getCurrentMedication());
-                response.put("allergies", profile.getAllergies());
-                response.put("healthBadge", profile.getHealthBadge());
-                response.put("lastAnalysis", profile.getLastAnalysis());
-                response.put("carePlan", profile.getCarePlan());
+                resp.put("dob", profile.getDob());
+                resp.put("age", profile.getAge());
+                resp.put("gender", profile.getGender());
+                resp.put("bloodGroup", profile.getBloodGroup());
+                resp.put("emergencyNumber", profile.getEmergencyNumber());
+                resp.put("preferredLanguage", profile.getPreferredLanguage());
+                resp.put("existingMedicalCondition", profile.getExistingMedicalCondition());
+                resp.put("currentMedication", profile.getCurrentMedication());
+                resp.put("allergies", profile.getAllergies());
+                resp.put("healthBadge", profile.getHealthBadge());
+                resp.put("lastAnalysis", profile.getLastAnalysis());
+                resp.put("carePlan", profile.getCarePlan());
             } else {
-                response.put("dob", "");
-                response.put("age", 30);
-                response.put("gender", "Not Specified");
-                response.put("bloodGroup", "O+ (Confirmed)");
-                response.put("emergencyNumber", "+91 98765 43210");
-                response.put("preferredLanguage", "English");
-                response.put("existingMedicalCondition", "None");
-                response.put("currentMedication", "None");
-                response.put("allergies", "None");
-                response.put("healthBadge", null);
+                resp.put("dob", "");
+                resp.put("age", 30);
+                resp.put("gender", "Not Specified");
+                resp.put("bloodGroup", "O+ (Confirmed)");
+                resp.put("emergencyNumber", "+91 98765 43210");
+                resp.put("preferredLanguage", "English");
+                resp.put("existingMedicalCondition", "None");
+                resp.put("currentMedication", "None");
+                resp.put("allergies", "None");
+                resp.put("healthBadge", null);
             }
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(resp);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
-
 
     @PutMapping("/profile/avatar")
     public ResponseEntity<?> updateAvatar(
@@ -199,8 +196,7 @@ public class AuthController {
             authService.updateAvatarUrl(email, avatarUrl);
             return ResponseEntity.ok(ApiResponse.success("Avatar updated successfully"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -212,23 +208,20 @@ public class AuthController {
             String token = authHeader.replace("Bearer ", "");
             String email = tokenProvider.getEmailFromToken(token);
             User user = authService.getUserByEmail(email);
-
             authService.updatePatientProfile(user.getId(), request);
             return ResponseEntity.ok(ApiResponse.success("Profile updated successfully"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
     @GetMapping("/verify-upi")
     public ResponseEntity<?> verifyUpi(@RequestParam String upiId) {
         try {
-            java.util.Map<String, Object> result = authService.verifyUpiId(upiId);
+            Map<String, Object> result = authService.verifyUpiId(upiId);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -237,14 +230,12 @@ public class AuthController {
         try {
             String email = request.get("email");
             if (email == null || email.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("Email is required"));
+                return ResponseEntity.badRequest().body(ApiResponse.error("Email is required"));
             }
             AuthResponse response = authService.googleLogin(email);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 
@@ -260,8 +251,7 @@ public class AuthController {
             authService.resetPassword(email, newPassword);
             return ResponseEntity.ok(ApiResponse.success("Password reset successfully!"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
 

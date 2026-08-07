@@ -8,16 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import com.mediverse.dto.ApiResponse;
@@ -47,20 +38,20 @@ public class BookingController {
             @Valid @RequestBody BookingRequest request,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long patientId = getUserIdFromToken(authHeader);
+            Long patientId = extractUserId(authHeader);
             Booking booking = bookingService.createBooking(request, patientId);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", booking.getId());
-            response.put("bookingDate", booking.getBookingDate());
-            response.put("timeSlot", booking.getTimeSlot());
-            response.put("type", booking.getType());
-            response.put("status", booking.getStatus());
-            response.put("hospitalName", booking.getHospital().getName());
-            response.put("doctorName", booking.getDoctor().getName());
-            response.put("patientName", booking.getPatientName());
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", booking.getId());
+            data.put("bookingDate", booking.getBookingDate());
+            data.put("timeSlot", booking.getTimeSlot());
+            data.put("type", booking.getType());
+            data.put("status", booking.getStatus());
+            data.put("hospitalName", booking.getHospital().getName());
+            data.put("doctorName", booking.getDoctor().getName());
+            data.put("patientName", booking.getPatientName());
 
-            return ResponseEntity.ok(ApiResponse.success("Booking created successfully! Confirmation email sent.", response));
+            return ResponseEntity.ok(ApiResponse.success("Booking created successfully! Confirmation email sent.", data));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
@@ -83,7 +74,7 @@ public class BookingController {
             @RequestParam(required = false) Long familyMemberId,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long patientId = getUserIdFromToken(authHeader);
+            Long patientId = extractUserId(authHeader);
             List<Booking> bookings = bookingService.getPatientBookings(patientId, familyMemberId);
             return ResponseEntity.ok(bookings.stream().map(this::toMap).collect(Collectors.toList()));
         } catch (RuntimeException e) {
@@ -94,7 +85,7 @@ public class BookingController {
     @GetMapping("/doctor")
     public ResponseEntity<?> getDoctorBookings(@RequestHeader("Authorization") String authHeader) {
         try {
-            Long doctorId = getUserIdFromToken(authHeader);
+            Long doctorId = extractUserId(authHeader);
             List<Booking> bookings = bookingService.getDoctorBookings(doctorId);
             return ResponseEntity.ok(bookings.stream().map(this::toMap).collect(Collectors.toList()));
         } catch (RuntimeException e) {
@@ -108,8 +99,8 @@ public class BookingController {
             @RequestParam String status,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long userId = getUserIdFromToken(authHeader);
-            Booking booking = bookingService.updateBookingStatus(id, status, userId);
+            Long userId = extractUserId(authHeader);
+            bookingService.updateBookingStatus(id, status, userId);
             return ResponseEntity.ok(ApiResponse.success("Booking status updated to " + status));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
@@ -123,7 +114,7 @@ public class BookingController {
             @RequestParam String timeSlot,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long userId = getUserIdFromToken(authHeader);
+            Long userId = extractUserId(authHeader);
             LocalDate newDate = LocalDate.parse(date);
             Booking booking = bookingService.rescheduleBooking(id, newDate, timeSlot, userId);
             return ResponseEntity.ok(ApiResponse.success("Booking rescheduled successfully!", toMap(booking)));
@@ -185,10 +176,12 @@ public class BookingController {
         map.put("patientPhone", booking.getPatientPhone());
         map.put("age", booking.getAge());
         map.put("gender", booking.getGender());
+
         if (booking.getFamilyMember() != null) {
             map.put("familyMemberId", booking.getFamilyMember().getId());
             map.put("familyMemberName", booking.getFamilyMember().getName());
         }
+
         map.put("symptoms", booking.getSymptoms());
         map.put("paymentMethod", booking.getPaymentMethod());
         map.put("paymentStatus", booking.getPaymentStatus());
@@ -197,25 +190,26 @@ public class BookingController {
         map.put("doctorId", booking.getDoctor().getId());
         map.put("doctorName", booking.getDoctor().getName());
         map.put("createdAt", booking.getCreatedAt());
-        String meetingLink = booking.getMeetingLink();
-        if (meetingLink != null && meetingLink.contains("meet.jit.si")) {
-            meetingLink = null;
+
+        String link = booking.getMeetingLink();
+        if (link != null && link.contains("meet.jit.si")) {
+            link = null;
         }
-        map.put("meetingLink", meetingLink);
+        map.put("meetingLink", link);
+
         map.put("aiReport", booking.getAiReport());
         map.put("conditionBadge", booking.getConditionBadge());
         map.put("conditionBadgeReason", booking.getConditionBadgeReason());
         map.put("previousPrescriptionSummary", booking.getPreviousPrescriptionSummary());
-        
+
         PatientProfile pProfile = authService.getPatientProfile(booking.getPatient().getId());
         map.put("healthBadge", pProfile != null ? pProfile.getHealthBadge() : null);
         return map;
     }
 
-    private Long getUserIdFromToken(String authHeader) {
+    private Long extractUserId(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String email = tokenProvider.getEmailFromToken(token);
-        User user = authService.getUserByEmail(email);
-        return user.getId();
+        return authService.getUserByEmail(email).getId();
     }
 }

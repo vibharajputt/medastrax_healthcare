@@ -8,6 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface OtpVerificationRepository extends JpaRepository<OtpVerification, Long> {
+
     Optional<OtpVerification> findTopByIdentifierAndTypeOrderByCreatedAtDesc(
             String identifier, OtpVerification.OtpType type);
 

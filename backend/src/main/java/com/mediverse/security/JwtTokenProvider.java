@@ -20,50 +20,49 @@ public class JwtTokenProvider {
     @Value("${app.jwt.expiration}")
     private long jwtExpiration;
 
-    private SecretKey getSigningKey() {
+    private SecretKey signingKey() {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        UserDetails principal = (UserDetails) authentication.getPrincipal();
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+        Date expiresAt = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .subject(principal.getUsername())
                 .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSigningKey())
+                .expiration(expiresAt)
+                .signWith(signingKey())
                 .compact();
     }
 
     public String generateTokenFromEmail(String email) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+        Date expiresAt = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSigningKey())
+                .expiration(expiresAt)
+                .signWith(signingKey())
                 .compact();
     }
 
     public String getEmailFromToken(String token) {
         Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(signingKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-
         return claims.getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(getSigningKey())
+                    .verifyWith(signingKey())
                     .build()
                     .parseSignedClaims(token);
             return true;

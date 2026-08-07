@@ -10,13 +10,15 @@ import { useGoogleLogin } from '@react-oauth/google';
 import logo from '../assets/medastrax-logo.png';
 import './Auth.css';
 
-const generateCaptcha = () => {
-  // Exclude ambiguous characters: 0/O, 1/I/l
+const generateCaptchaText = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let text = '';
-  for (let i = 0; i < 6; i++) text += chars[Math.floor(Math.random() * chars.length)];
-  return { text, answer: text };
+  let str = '';
+  for (let i = 0; i < 6; i++) {
+    str += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return { text: str, answer: str };
 };
+
 function CaptchaCanvas({ text }) {
   const canvasRef = useRef(null);
   const W = 260, H = 70;
@@ -27,7 +29,6 @@ function CaptchaCanvas({ text }) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, W, H);
 
-    // Soft muted background
     const bg = ctx.createLinearGradient(0, 0, W, H);
     bg.addColorStop(0, '#dce8e6');
     bg.addColorStop(1, '#d4dfe0');
@@ -36,7 +37,6 @@ function CaptchaCanvas({ text }) {
     ctx.roundRect(0, 0, W, H, 10);
     ctx.fill();
 
-    // Subtle noise dots
     for (let i = 0; i < 60; i++) {
       ctx.fillStyle = `rgba(${100 + Math.random()*80|0},${120 + Math.random()*60|0},${120 + Math.random()*60|0},${0.12 + Math.random()*0.15})`;
       ctx.beginPath();
@@ -44,7 +44,6 @@ function CaptchaCanvas({ text }) {
       ctx.fill();
     }
 
-    // Soft wavy lines
     for (let i = 0; i < 2; i++) {
       ctx.strokeStyle = `rgba(100,130,130,${0.15 + Math.random()*0.1})`;
       ctx.lineWidth = 0.8 + Math.random() * 0.6;
@@ -54,7 +53,6 @@ function CaptchaCanvas({ text }) {
       ctx.stroke();
     }
 
-    // Draw characters — dark, varied fonts, slight distortion
     const chars = text.split('');
     const darkColors = ['#000000', '#000000', '#000000', '#000000', '#000000', '#000000'];
     const fonts = ['Georgia', 'Courier New', 'Arial Black', 'Times New Roman', 'Palatino', 'Trebuchet MS'];
@@ -83,7 +81,6 @@ function CaptchaCanvas({ text }) {
       ctx.restore();
     });
 
-    // Light strikethrough
     ctx.strokeStyle = 'rgba(80,100,100,0.12)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -96,80 +93,69 @@ function CaptchaCanvas({ text }) {
 }
 
 export default function LoginPage() {
-  const [email, setEmail]               = useState('');
-  const [password, setPassword]         = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading]           = useState(false);
+  const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState('PATIENT');
-  const [rememberMe, setRememberMe]     = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
-  // CAPTCHA
-  const [captcha, setCaptcha]           = useState(generateCaptcha);
+  const [captcha, setCaptcha] = useState(generateCaptchaText);
   const [captchaInput, setCaptchaInput] = useState('');
   const [captchaError, setCaptchaError] = useState(false);
 
-  // 2FA modal
-  const [show2FA, setShow2FA]           = useState(false);
-  const [otp2FA, setOtp2FA]             = useState(['', '', '', '', '', '']);
-  const [pendingLoginData, setPendingLoginData] = useState(null);
+  const [show2FA, setShow2FA] = useState(false);
+  const [otp2FA, setOtp2FA] = useState(['', '', '', '', '', '']);
+  const [authData, setAuthData] = useState(null);
   const [verifying2FA, setVerifying2FA] = useState(false);
-  const [otpError, setOtpError]         = useState(false);
+  const [otpError, setOtpError] = useState(false);
 
-  // Forgot Password modal
-  const [showForgot, setShowForgot]         = useState(false);
-  const [forgotStep, setForgotStep]         = useState(1); // 1=email, 2=OTP, 3=new password
-  const [forgotEmail, setForgotEmail]       = useState('');
-  const [forgotOtp, setForgotOtp]           = useState(['', '', '', '', '', '']);
-  const [forgotNewPass, setForgotNewPass]   = useState('');
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotOtp, setForgotOtp] = useState(['', '', '', '', '', '']);
+  const [forgotNewPass, setForgotNewPass] = useState('');
   const [forgotConfPass, setForgotConfPass] = useState('');
-  const [forgotLoading, setForgotLoading]   = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const [showForgotPass, setShowForgotPass] = useState(false);
 
-  // autofill guard
-  const [emailReady, setEmailReady]     = useState(false);
-  const [passwordReady, setPasswordReady] = useState(false);
-
   const { login } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  // Pre-fill email from localStorage if Remember Me was checked before
   useEffect(() => {
     const saved = localStorage.getItem('medastrax_remember_email');
     if (saved) {
       setEmail(saved);
       setRememberMe(true);
-      setEmailReady(true);
     }
   }, []);
 
-  // ── OTP input box handler (shared for 2FA & forgot) ──────────────────
   const makeOtpHandler = (setter, errSetter) => (val, idx, boxes) => {
     if (!/^\d?$/.test(val)) return;
     setter(prev => { const n = [...prev]; n[idx] = val; return n; });
     if (errSetter) errSetter(false);
     if (val && idx < 5) document.getElementById(`${boxes}-${idx + 1}`)?.focus();
   };
+
   const makeOtpKeyDown = (getter) => (e, idx, boxes) => {
     if (e.key === 'Backspace' && !getter[idx] && idx > 0)
       document.getElementById(`${boxes}-${idx - 1}`)?.focus();
   };
 
-  const handleOtpChange  = (val, idx) => makeOtpHandler(setOtp2FA,    setOtpError)(val, idx, 'otp-box');
-  const handleOtpKeyDown = (e,   idx) => makeOtpKeyDown(otp2FA)(e, idx, 'otp-box');
-  const handleForgotOtpChange  = (val, idx) => makeOtpHandler(setForgotOtp, null)(val, idx, 'fotp-box');
-  const handleForgotOtpKeyDown = (e,   idx) => makeOtpKeyDown(forgotOtp)(e, idx, 'fotp-box');
+  const handleOtpChange = (val, idx) => makeOtpHandler(setOtp2FA, setOtpError)(val, idx, 'otp-box');
+  const handleOtpKeyDown = (e, idx) => makeOtpKeyDown(otp2FA)(e, idx, 'otp-box');
+  const handleForgotOtpChange = (val, idx) => makeOtpHandler(setForgotOtp, null)(val, idx, 'fotp-box');
+  const handleForgotOtpKeyDown = (e, idx) => makeOtpKeyDown(forgotOtp)(e, idx, 'fotp-box');
 
-  // ── Navigate after login ───────────────────────────────────────────────
   const redirectByRole = (role) => {
-    if (role === 'ADMIN')    navigate('/admin/dashboard');
-    else if (role === 'DOCTOR')   navigate('/doctor/dashboard');
+    if (role === 'ADMIN') navigate('/admin/dashboard');
+    else if (role === 'DOCTOR') navigate('/doctor/dashboard');
     else if (role === 'PHARMACY') navigate('/pharmacy/dashboard');
     else if (role === 'HOSPITAL') navigate('/hospital/dashboard');
     else if (role === 'LAB') navigate('/lab/dashboard');
     else navigate('/dashboard');
   };
 
-  // ── Main submit ────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -178,10 +164,9 @@ export default function LoginPage() {
       return;
     }
 
-    // CAPTCHA check
     if (captchaInput.trim().toLowerCase() !== captcha.answer.toLowerCase()) {
       setCaptchaError(true);
-      setCaptcha(generateCaptcha());
+      setCaptcha(generateCaptchaText());
       setCaptchaInput('');
       toast.error('Incorrect CAPTCHA. Please try the new code.');
       return;
@@ -191,15 +176,13 @@ export default function LoginPage() {
     try {
       const response = await authAPI.login({ email, password });
 
-      // Save/remove email for Remember Me
       if (rememberMe) {
         localStorage.setItem('medastrax_remember_email', email);
       } else {
         localStorage.removeItem('medastrax_remember_email');
       }
 
-      // Store data and show 2FA modal
-      setPendingLoginData(response.data);
+      setAuthData(response.data);
       setShow2FA(true);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Invalid credentials');
@@ -208,7 +191,6 @@ export default function LoginPage() {
     }
   };
 
-  // ── 2FA verify ────────────────────────────────────────────────────────
   const handle2FAVerify = () => {
     const code = otp2FA.join('');
     if (code.length < 6) {
@@ -219,12 +201,11 @@ export default function LoginPage() {
 
     setVerifying2FA(true);
 
-    // Demo: accept 123456 as valid code
     setTimeout(() => {
       if (code === '123456') {
-        login(pendingLoginData);
-        toast.success(`Welcome back, ${pendingLoginData.name}! 🎉`);
-        redirectByRole(pendingLoginData.role);
+        login(authData);
+        toast.success(`Welcome back, ${authData.name}!`);
+        redirectByRole(authData.role);
       } else {
         setOtpError(true);
         setOtp2FA(['', '', '', '', '', '']);
@@ -235,13 +216,13 @@ export default function LoginPage() {
     }, 900);
   };
 
-  // ── Forgot Password handlers ────────────────────────────────────────
   const openForgot = () => {
     setForgotEmail(''); setForgotOtp(['','','','','','']);
     setForgotNewPass(''); setForgotConfPass('');
     setForgotStep(1); setForgotLoading(false);
     setShowForgot(true);
   };
+
   const closeForgot = () => setShowForgot(false);
 
   const handleForgotSendOtp = async () => {
@@ -252,20 +233,20 @@ export default function LoginPage() {
       toast.success('OTP sent to your email!');
       setForgotStep(2);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to send OTP. Check your email.');
+      toast.error(err.response?.data?.message || 'Failed to send OTP.');
     } finally { setForgotLoading(false); }
   };
 
   const handleForgotVerifyOtp = async () => {
     const code = forgotOtp.join('');
-    if (code.length < 6) { toast.error('Enter the full 6-digit OTP.'); return; }
+    if (code.length < 6) { toast.error('Enter the full OTP.'); return; }
     setForgotLoading(true);
     try {
       await otpAPI.verifyOtp(forgotEmail, 'EMAIL', code);
       toast.success('OTP verified!');
       setForgotStep(3);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Invalid OTP. Please try again.');
+      toast.error(err.response?.data?.message || 'Invalid OTP.');
     } finally { setForgotLoading(false); }
   };
 
@@ -282,31 +263,24 @@ export default function LoginPage() {
       toast.success('Password reset successfully! Please log in.');
       closeForgot();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Reset failed. Try again.');
+      toast.error(err.response?.data?.message || 'Reset failed.');
     } finally { setForgotLoading(false); }
   };
 
-  // ── Google Login (real OAuth popup) ──────────────────────────────────
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       const loadingToast = toast.loading('Signing in with Google...');
       try {
-        // Fetch Google profile
         const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
         const profile = await res.json();
-
-        // Verify with the backend
         const response = await authAPI.googleLogin(profile.email);
-
-        // Store session and login
         login(response.data);
-        toast.success(`Welcome back, ${response.data.name}! 🎉`, { id: loadingToast, duration: 3000 });
+        toast.success(`Welcome back, ${response.data.name}!`, { id: loadingToast, duration: 3000 });
         redirectByRole(response.data.role);
       } catch (error) {
-        const errorMsg = error.response?.data?.message || 'Failed to sign in with Google. Please try again.';
-        toast.error(errorMsg, { id: loadingToast, duration: 4000 });
+        toast.error('Failed to sign in with Google.', { id: loadingToast, duration: 4000 });
       }
     },
     onError: () => {
@@ -329,8 +303,6 @@ export default function LoginPage() {
   const fillDemoCredentials = (demoEmail) => {
     setEmail(demoEmail);
     setPassword('password123');
-    setEmailReady(true);
-    setPasswordReady(true);
   };
 
   return (
@@ -356,7 +328,6 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        {/* Header */}
         <div className="auth-header">
           <Link to="/" className="auth-logo">
             <img src={logo} alt="MedAstraX Logo" className="auth-logo-img" />
@@ -369,7 +340,6 @@ export default function LoginPage() {
           <p className="auth-subtitle">Sign in to continue to your health portal</p>
         </div>
 
-        {/* Role tabs */}
         <div
           style={{
             display: 'grid',
@@ -395,7 +365,6 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* Google Login Button */}
         <button className="google-login-btn" onClick={handleGoogleLogin} type="button">
           <svg width="20" height="20" viewBox="0 0 48 48" style={{ flexShrink: 0 }}>
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -407,14 +376,11 @@ export default function LoginPage() {
           <span>Continue with Google</span>
         </button>
 
-        {/* Divider */}
         <div className="auth-divider">
           <span>or sign in with email</span>
         </div>
 
-        {/* Main Form */}
         <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
-          {/* Email */}
           <div className="form-group">
             <label className="form-label">Email Address</label>
             <div className="form-input-icon">
@@ -432,7 +398,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Password */}
           <div className="form-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <label className="form-label" style={{ margin: 0 }}>Password</label>
@@ -457,7 +422,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Remember Me */}
           <div className="remember-me-row">
             <label className="remember-me-label">
               <div
@@ -474,7 +438,6 @@ export default function LoginPage() {
             </label>
           </div>
 
-          {/* CAPTCHA */}
           <div className={`captcha-block-clean ${captchaError ? 'captcha-error' : ''}`}>
             <div className="captcha-clean-header">
               <span className="captcha-clean-label">
@@ -483,7 +446,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="captcha-clean-refresh"
-                onClick={() => { setCaptcha(generateCaptcha()); setCaptchaInput(''); setCaptchaError(false); }}
+                onClick={() => { setCaptcha(generateCaptchaText()); setCaptchaInput(''); setCaptchaError(false); }}
                 title="New CAPTCHA"
               >
                 <FiRefreshCw size={13} />
@@ -515,7 +478,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Submit */}
           <motion.button
             type="submit"
             className="btn btn-primary btn-lg auth-submit"
@@ -526,7 +488,6 @@ export default function LoginPage() {
           </motion.button>
         </form>
 
-        {/* Footer */}
         <div className="auth-footer">
           <p>
             Don't have an account?{' '}
@@ -534,7 +495,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Demo Credentials */}
         <div className="demo-credentials">
           <p className="demo-title">🎯 Quick Demo Access</p>
           <div className="demo-chips">
@@ -549,7 +509,6 @@ export default function LoginPage() {
         </div>
       </motion.div>
 
-      {/* ── 2FA Modal ───────────────────────────────────────────────────── */}
       <AnimatePresence>
         {show2FA && (
           <motion.div
@@ -565,12 +524,10 @@ export default function LoginPage() {
               exit={{ scale: 0.85, opacity: 0, y: 40 }}
               transition={{ type: 'spring', damping: 22, stiffness: 300 }}
             >
-              {/* Close */}
               <button className="twofa-close" onClick={() => { setShow2FA(false); setOtp2FA(['','','','','','']); setOtpError(false); }}>
                 <FiX />
               </button>
 
-              {/* Icon */}
               <div className="twofa-icon-ring">
                 <FiShield size={28} />
               </div>
@@ -581,7 +538,6 @@ export default function LoginPage() {
                 <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Demo code: 123456</span>
               </p>
 
-              {/* OTP boxes */}
               <div className={`otp-boxes ${otpError ? 'otp-error' : ''}`}>
                 {otp2FA.map((digit, idx) => (
                   <input
@@ -628,7 +584,6 @@ export default function LoginPage() {
         )}
       </AnimatePresence>
 
-      {/* ── Forgot Password Modal ──────────────────────────────────── */}
       <AnimatePresence>
         {showForgot && (
           <motion.div className="twofa-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -705,4 +660,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

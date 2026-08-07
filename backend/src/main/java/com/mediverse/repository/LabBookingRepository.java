@@ -8,7 +8,10 @@ import java.util.List;
 
 @Repository
 public interface LabBookingRepository extends JpaRepository<LabBooking, Long> {
-    List<LabBooking> findByPatientId(Long patientId);
-    List<LabBooking> findByLabName(String labName);
-    List<LabBooking> findByPrescriptionId(Long prescriptionId);
+
+    public List<LabBooking> findByPatientId(Long patientId);
+
+    public List<LabBooking> findByLabName(String labName);
+
+    public List<LabBooking> findByPrescriptionId(Long prescriptionId);
 }

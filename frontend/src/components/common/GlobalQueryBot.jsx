@@ -20,55 +20,54 @@ import './GlobalQueryBot.css';
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 export default function GlobalQueryBot() {
-  const location = useLocation();
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessage, setChatMessage] = useState('');
-  const [chatSessionId, setChatSessionId] = useState(null);
-  const [chatHistory, setChatHistory] = useState([
+  const loc = useLocation();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [sessionIdentifier, setSessionIdentifier] = useState(null);
+  const [history, setHistory] = useState([
     {
       sender: 'ai',
       text: '👋 **Welcome to MedAstraX!** I am your 24/7 Platform Assistant.\n\nI can help you with:\n- 📅 [Booking an appointment](/dashboard) with a doctor\n- 📝 [Creating an account](/signup) or [logging in](/login)\n- 💊 [Buying & ordering medicines](/my-prescriptions)\n- 🎙️ Using AI clinical tools or diagnostic bookings\n- 🩺 General health and wellness questions\n\n*How can I help you today? You can type your query or click the microphone button next to me to ask with your voice!*'
     }
   ]);
-  const [sendingChat, setSendingChat] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState(null);
-  const chatBodyRef = useRef(null);
+  const [isSending, setIsSending] = useState(false);
+  const [micActive, setMicActive] = useState(false);
+  const [recogInstance, setRecogInstance] = useState(null);
+  const chatScrollRef = useRef(null);
 
-  const isPatientDashboard = location.pathname.includes('/dashboard') || 
-                             location.pathname.includes('/dash') || 
-                             location.pathname.includes('/care-plan') || 
-                             location.pathname.includes('/my-bookings') || 
-                             location.pathname.includes('/my-prescriptions') || 
-                             location.pathname.includes('/pharmacy-order') || 
-                             location.pathname.includes('/diagnostic-order') || 
-                             location.pathname.includes('/consultation-room') || 
-                             location.pathname.includes('/emergency');
+  const onDashboard = loc.pathname.includes('/dashboard') || 
+                      loc.pathname.includes('/dash') || 
+                      loc.pathname.includes('/care-plan') || 
+                      loc.pathname.includes('/my-bookings') || 
+                      loc.pathname.includes('/my-prescriptions') || 
+                      loc.pathname.includes('/pharmacy-order') || 
+                      loc.pathname.includes('/diagnostic-order') || 
+                      loc.pathname.includes('/consultation-room') || 
+                      loc.pathname.includes('/emergency');
 
-  const quickTags = [
+  const suggestedQueries = [
     { label: '📅 Book Appointment', query: 'How do I book a doctor appointment on the platform?' },
     { label: '📝 Sign Up Guide', query: 'How can I register an account as a patient or doctor?' },
     { label: '💊 Buy Medicines', query: 'How can I order medicines online using my prescriptions?' },
     { label: '🏆 Earn Rewards', query: 'How does the EXP checklist and streak rewards program work?' }
   ];
 
-  // Initialize Speech Recognition
   useEffect(() => {
     if (!SpeechRecognition) return;
     const rec = new SpeechRecognition();
-    rec.continuous = false; // Stop listening once user pauses speaking
+    rec.continuous = false;
     rec.interimResults = false;
     rec.lang = 'en-US';
 
     rec.onstart = () => {
-      setIsListening(true);
+      setMicActive(true);
       toast.success('🎙️ Voice assistant listening... Speak now!', { id: 'voice-active' });
     };
 
     rec.onresult = (event) => {
-      const resultText = event.results[0][0].transcript;
-      if (resultText && resultText.trim()) {
-        handleSendVoiceQuery(resultText);
+      const text = event.results[0][0].transcript;
+      if (text && text.trim()) {
+        sendVoicePrompt(text);
       }
     };
 
@@ -79,95 +78,94 @@ export default function GlobalQueryBot() {
       } else {
         toast.error('Voice input error. Please try again.', { id: 'voice-active' });
       }
-      setIsListening(false);
+      setMicActive(false);
     };
 
     rec.onend = () => {
-      setIsListening(false);
+      setMicActive(false);
     };
 
-    setRecognition(rec);
+    setRecogInstance(rec);
   }, []);
 
-  // Scroll to bottom of chat
   useEffect(() => {
-    if (chatBodyRef.current) {
-      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
-  }, [chatHistory, sendingChat, chatOpen]);
+  }, [history, isSending, isChatOpen]);
 
-  const handleToggleListening = () => {
+  const toggleMic = () => {
     if (!SpeechRecognition) {
       toast.error('Speech recognition is not supported in this browser. Please use Chrome or Edge.');
       return;
     }
 
-    if (isListening) {
-      recognition.stop();
+    if (micActive) {
+      recogInstance.stop();
     } else {
       try {
-        recognition.start();
+        recogInstance.start();
       } catch (err) {
         console.error('Failed to start speech recognition:', err);
       }
     }
   };
 
-  const handleSendVoiceQuery = (text) => {
+  const sendVoicePrompt = (text) => {
     toast.success(`Captured: "${text}"`, { icon: '🎙️', id: 'voice-captured' });
-    setChatOpen(true);
-    handleSendChat(text);
+    setIsChatOpen(true);
+    sendMessage(text);
   };
 
-  const handleSendChat = async (textToSend) => {
-    const msg = textToSend || chatMessage;
-    if (!msg.trim() || sendingChat) return;
+  const sendMessage = async (explicitText) => {
+    const msg = explicitText || currentMessage;
+    if (!msg.trim() || isSending) return;
 
-    setChatHistory(prev => [...prev, { sender: 'user', text: msg }]);
-    if (!textToSend) setChatMessage('');
-    setSendingChat(true);
+    setHistory(prev => [...prev, { sender: 'user', text: msg }]);
+    if (!explicitText) setCurrentMessage('');
+    setIsSending(true);
 
     if (!navigator.onLine) {
       setTimeout(async () => {
         try {
           const reply = await getOfflineAiResponse(msg);
-          setChatHistory(prev => [...prev, { sender: 'ai', text: reply }]);
+          setHistory(prev => [...prev, { sender: 'ai', text: reply }]);
         } catch (err) {
           console.error(err);
-          setChatHistory(prev => [...prev, { sender: 'ai', text: '⚠️ **Error:** Failed to compute offline reply.' }]);
+          setHistory(prev => [...prev, { sender: 'ai', text: '⚠️ **Error:** Failed to compute offline reply.' }]);
         } finally {
-          setSendingChat(false);
+          setIsSending(false);
         }
       }, 500);
       return;
     }
 
     try {
-      const res = await aiAPI.queryChat(msg, chatSessionId);
+      const res = await aiAPI.queryChat(msg, sessionIdentifier);
       const reply = res.data.reply || 'Sorry, I couldn\'t formulate a reply. Please try again.';
       if (res.data.sessionId) {
-        setChatSessionId(res.data.sessionId);
+        setSessionIdentifier(res.data.sessionId);
       }
-      setChatHistory(prev => [...prev, { sender: 'ai', text: reply }]);
+      setHistory(prev => [...prev, { sender: 'ai', text: reply }]);
     } catch (err) {
       console.error(err);
-      setChatHistory(prev => [...prev, { sender: 'ai', text: '⚠️ **Connection Error:** Could not connect to Astra. Please make sure the backend server is running and try again.' }]);
+      setHistory(prev => [...prev, { sender: 'ai', text: '⚠️ **Connection Error:** Could not connect to Astra. Please make sure the backend server is running and try again.' }]);
     } finally {
-      setSendingChat(false);
+      setIsSending(false);
     }
   };
 
-  const handleResetChat = async () => {
+  const clearChat = async () => {
     try {
-      const res = await aiAPI.resetQueryChat(chatSessionId);
+      const res = await aiAPI.resetQueryChat(sessionIdentifier);
       if (res.data.sessionId) {
-        setChatSessionId(res.data.sessionId);
+        setSessionIdentifier(res.data.sessionId);
       }
       toast.success('Chat history cleared! Fresh session started.');
     } catch (err) {
       console.error('Reset failed', err);
     }
-    setChatHistory([
+    setHistory([
       {
         sender: 'ai',
         text: '👋 **Session reset!** How can I assist you with MedAstraX platform queries or wellness support?'
@@ -175,8 +173,7 @@ export default function GlobalQueryBot() {
     ]);
   };
 
-  // Helper to parse markdown and convert relative links to React Router Link components
-  const parseMarkdown = (text) => {
+  const renderMarkdownText = (text) => {
     if (!text) return '';
     const lines = text.split('\n');
     return lines.map((line, index) => {
@@ -207,7 +204,7 @@ export default function GlobalQueryBot() {
             <Link 
               key={`link-${matchIndex}`} 
               to={linkUrl} 
-              onClick={() => setChatOpen(false)} // Close bot panel on link click for seamless flow
+              onClick={() => setIsChatOpen(false)}
               className="chat-embedded-link"
             >
               {linkText}
@@ -267,31 +264,28 @@ export default function GlobalQueryBot() {
   };
 
   return (
-    <div className={`global-query-bot-container ${isPatientDashboard ? 'dashboard-shifted' : ''}`}>
+    <div className={`global-query-bot-container ${onDashboard ? 'dashboard-shifted' : ''}`}>
       
-      {/* Voice Status Alert */}
-      {isListening && (
+      {micActive && (
         <div className="voice-listening-toast">
           <div className="mic-pulse-ring"></div>
           <span>🎙️ Listening to your query...</span>
         </div>
       )}
 
-      {/* Floating Buttons: Mic & Chat Trigger */}
       <div className="global-bot-fab-group">
         
-        {/* Voice Assistant Button */}
         <button 
-          className={`global-mic-fab ${isListening ? 'listening' : ''}`}
-          onClick={handleToggleListening}
-          title={isListening ? "Stop Voice Input" : "Ask with AI Voice Assistant"}
+          className={`global-mic-fab ${micActive ? 'listening' : ''}`}
+          onClick={toggleMic}
+          title={micActive ? "Stop Voice Input" : "Ask with AI Voice Assistant"}
         >
-          {isListening ? (
+          {micActive ? (
             <FiMicOff size={20} className="mic-icon-off" />
           ) : (
             <FiMic size={20} className="mic-icon-on" />
           )}
-          {isListening && (
+          {micActive && (
             <div className="mic-waves">
               <span className="wave-bar"></span>
               <span className="wave-bar"></span>
@@ -300,13 +294,12 @@ export default function GlobalQueryBot() {
           )}
         </button>
 
-        {/* Chatbot Toggle Button */}
         <button 
-          className={`global-chat-fab ${chatOpen ? 'open' : ''}`} 
-          onClick={() => setChatOpen(!chatOpen)}
+          className={`global-chat-fab ${isChatOpen ? 'open' : ''}`} 
+          onClick={() => setIsChatOpen(!isChatOpen)}
           title="MedAstraX Platform Assistant"
         >
-          {chatOpen ? (
+          {isChatOpen ? (
             <FiX size={22} />
           ) : (
             <div className="chat-fab-inner">
@@ -317,9 +310,8 @@ export default function GlobalQueryBot() {
         </button>
       </div>
 
-      {/* Chat Interface Panel Overlay */}
       <AnimatePresence>
-        {chatOpen && (
+        {isChatOpen && (
           <motion.div 
             className="global-chat-panel"
             initial={{ opacity: 0, y: 40, scale: 0.96 }}
@@ -327,7 +319,6 @@ export default function GlobalQueryBot() {
             exit={{ opacity: 0, y: 40, scale: 0.96 }}
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
           >
-            {/* Panel Header */}
             <div className="global-chat-header">
               <div className="header-info">
                 <div className="header-avatar">
@@ -351,14 +342,14 @@ export default function GlobalQueryBot() {
               
               <div className="header-actions">
                 <button
-                  onClick={handleResetChat}
+                  onClick={clearChat}
                   title="Reset Conversation"
                   className="header-btn-reset"
                 >
                   <FiRefreshCw size={14} />
                 </button>
                 <button 
-                  onClick={() => setChatOpen(false)} 
+                  onClick={() => setIsChatOpen(false)} 
                   className="header-btn-close"
                 >
                   <FiX size={18} />
@@ -366,20 +357,19 @@ export default function GlobalQueryBot() {
               </div>
             </div>
 
-            {/* Chat History Area */}
-            <div className="global-chat-body" ref={chatBodyRef}>
-              {chatHistory.map((chat, i) => (
-                <div key={i} className={`global-chat-message ${chat.sender}`}>
+            <div className="global-chat-body" ref={chatScrollRef}>
+              {history.map((chat, idx) => (
+                <div key={idx} className={`global-chat-message ${chat.sender}`}>
                   <span className="message-sender-name">
                     {chat.sender === 'user' ? 'You' : 'Astra'}
                   </span>
                   <div className="message-bubble">
-                    {chat.sender === 'ai' ? parseMarkdown(chat.text) : chat.text}
+                    {chat.sender === 'ai' ? renderMarkdownText(chat.text) : chat.text}
                   </div>
                 </div>
               ))}
               
-              {sendingChat && (
+              {isSending && (
                 <div className="global-chat-message ai">
                   <span className="message-sender-name">Astra</span>
                   <div className="message-bubble typing">
@@ -390,13 +380,12 @@ export default function GlobalQueryBot() {
               )}
             </div>
 
-            {/* Suggested Tags Area */}
             <div className="global-chat-suggestions">
-              {quickTags.map((tag, i) => (
+              {suggestedQueries.map((tag, i) => (
                 <button 
                   key={i} 
                   className="suggestion-pill" 
-                  onClick={() => handleSendChat(tag.query)}
+                  onClick={() => sendMessage(tag.query)}
                 >
                   <FiHelpCircle size={12} className="pill-icon" />
                   <span>{tag.label}</span>
@@ -404,23 +393,22 @@ export default function GlobalQueryBot() {
               ))}
             </div>
 
-            {/* Chat Input form */}
             <form 
-              onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} 
+              onSubmit={(e) => { e.preventDefault(); sendMessage(); }} 
               className="global-chat-input-area"
             >
               <input 
                 type="text" 
                 className="global-chat-input-field" 
                 placeholder="Ask how to book, sign up, buy..." 
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                disabled={sendingChat}
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+                disabled={isSending}
               />
               <button 
                 type="submit" 
                 className="global-chat-send-btn" 
-                disabled={sendingChat || !chatMessage.trim()}
+                disabled={isSending || !currentMessage.trim()}
               >
                 <FiSend size={16} />
               </button>

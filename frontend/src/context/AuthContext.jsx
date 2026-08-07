@@ -6,20 +6,21 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('medastrax_token'));
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('medastrax_user');
-    return saved ? JSON.parse(saved) : null;
+    const stored = localStorage.getItem('medastrax_user');
+    return stored ? JSON.parse(stored) : null;
   });
   const [loading, setLoading] = useState(true);
   const [activeProfile, setActiveProfile] = useState(() => {
-    const saved = localStorage.getItem('medastrax_active_profile');
-    return saved ? JSON.parse(saved) : null;
+    const stored = localStorage.getItem('medastrax_active_profile');
+    return stored ? JSON.parse(stored) : null;
   });
   const [familyMembers, setFamilyMembers] = useState([]);
 
   const refreshFamilyMembers = async () => {
     const savedToken = localStorage.getItem('medastrax_token') || token;
-    const savedUserString = localStorage.getItem('medastrax_user');
-    const savedUser = savedUserString ? JSON.parse(savedUserString) : user;
+    const userStr = localStorage.getItem('medastrax_user');
+    const savedUser = userStr ? JSON.parse(userStr) : user;
+
     if (savedToken && savedUser?.role === 'PATIENT') {
       try {
         const res = await familyMemberAPI.getAll();
@@ -31,7 +32,6 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    // Check for saved auth on mount
     setLoading(false);
   }, []);
 
@@ -66,7 +66,6 @@ export function AuthProvider({ children }) {
   };
 
   const switchProfile = (profile) => {
-    // profile can be null (Myself) or a FamilyMember object
     setActiveProfile(profile);
     if (profile) {
       localStorage.setItem('medastrax_active_profile', JSON.stringify(profile));
@@ -78,18 +77,18 @@ export function AuthProvider({ children }) {
   const updateUserAvatar = (avatarUrl) => {
     setUser(prev => {
       if (!prev) return prev;
-      const updated = { ...prev, avatarUrl };
-      localStorage.setItem('medastrax_user', JSON.stringify(updated));
-      return updated;
+      const next = { ...prev, avatarUrl };
+      localStorage.setItem('medastrax_user', JSON.stringify(next));
+      return next;
     });
   };
 
-  const updateUser = (updatedFields) => {
+  const updateUser = (fields) => {
     setUser(prev => {
       if (!prev) return prev;
-      const updated = { ...prev, ...updatedFields };
-      localStorage.setItem('medastrax_user', JSON.stringify(updated));
-      return updated;
+      const next = { ...prev, ...fields };
+      localStorage.setItem('medastrax_user', JSON.stringify(next));
+      return next;
     });
   };
 
@@ -117,7 +116,7 @@ export function AuthProvider({ children }) {
       switchProfile,
       refreshFamilyMembers,
       updateUserAvatar,
-      updateUser
+      updateUser,
     }}>
       {children}
     </AuthContext.Provider>
@@ -125,9 +124,9 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context;
+  return ctx;
 }

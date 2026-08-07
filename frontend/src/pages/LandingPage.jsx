@@ -25,7 +25,6 @@ import './LandingPage.css';
 import './ContactPage.css';
 import ScrollReveal from '../components/common/ScrollReveal';
 
-// ── Reusable animation variants ──────────────────────────────────────────────
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: (i = 0) => ({
@@ -68,29 +67,27 @@ const itemVariants = {
   }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 export default function LandingPage() {
-  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', purpose: '', message: '' });
-  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [contactDetails, setContactDetails] = useState({ name: '', email: '', phone: '', purpose: '', message: '' });
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleContactChange = (e) => {
     let value = e.target.value;
     if (e.target.name === 'phone') {
       value = value.replace(/\D/g, '').slice(0, 10);
     }
-    setContactForm({ ...contactForm, [e.target.name]: value });
+    setContactDetails({ ...contactDetails, [e.target.name]: value });
   };
 
   const handleContactSubmit = (e) => {
     e.preventDefault();
-    if (contactForm.phone.length !== 10) {
+    if (contactDetails.phone.length !== 10) {
       alert('Phone number must be exactly 10 digits.');
       return;
     }
-    setContactSubmitted(true);
-    setTimeout(() => setContactSubmitted(false), 4000);
-    setContactForm({ name: '', email: '', phone: '', purpose: '', message: '' });
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 4000);
+    setContactDetails({ name: '', email: '', phone: '', purpose: '', message: '' });
   };
 
   const cards = [
@@ -143,14 +140,12 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
-      {/* Background blobs */}
       <div className="landing-bg-effects">
         <div className="bg-orb bg-orb-1"></div>
         <div className="bg-orb bg-orb-2"></div>
         <div className="bg-orb bg-orb-3"></div>
       </div>
 
-      {/* ── Hero Section ──────────────────────────────────── */}
       <section className="hero-section" id="home">
         <motion.div
           className="hero-content"
@@ -180,7 +175,6 @@ export default function LandingPage() {
             </Link>
           </motion.div>
 
-          {/* Stats Grid — staggered */}
           <motion.div
             className="hero-stats-grid"
             variants={containerVariants}
@@ -205,7 +199,6 @@ export default function LandingPage() {
           </motion.div>
         </motion.div>
 
-        {/* Hero Visual */}
         <motion.div
           className="hero-visual"
           initial={{ opacity: 0, scale: 0.9, x: 40 }}
@@ -222,7 +215,6 @@ export default function LandingPage() {
               <img src={doctorPatientImg} alt="Empathetic Doctor Patient Interaction" className="doctor-patient-photo" />
             </motion.div>
 
-            {/* Floating Secure Badge */}
             <motion.div
               className="floating-card secure-card"
               initial={{ opacity: 0, x: 20 }}
@@ -240,7 +232,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ── Care Made Simple ───────────────────────────────── */}
       <section className="care-simple-section" id="how-it-works">
         <motion.div
           className="section-header"
@@ -279,7 +270,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Portal / Role Cards ────────────────────────────── */}
       <section className="portal-section">
         <motion.div
           className="section-header"
@@ -319,7 +309,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ── Features Grid ─────────────────────────────────── */}
       <section className="features-section" id="about">
         <motion.div
           className="section-header"
@@ -355,7 +344,6 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ── Testimonial ───────────────────────────────────── */}
       <section className="testimonial-section">
         <motion.div
           className="section-header"
@@ -408,7 +396,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Contact Section ───────────────────────────────── */}
       <section className="contact-section-landing" id="contact">
         <motion.div
           className="contact-header"
@@ -431,7 +418,6 @@ export default function LandingPage() {
         </motion.div>
 
         <div className="contact-body">
-          {/* Info Cards */}
           <motion.div
             className="contact-info-panel"
             initial="hidden"
@@ -465,7 +451,6 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          {/* Contact Form */}
           <motion.div
             className="contact-form-panel"
             initial={{ opacity: 0, x: 50 }}
@@ -474,7 +459,7 @@ export default function LandingPage() {
             viewport={{ once: false, margin: '-60px' }}
           >
             <div className="contact-form-card glass-card">
-              {contactSubmitted ? (
+              {showSuccess ? (
                 <motion.div className="contact-success" initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                   <div className="success-icon">✓</div>
                   <h3>Message Sent!</h3>
@@ -483,9 +468,9 @@ export default function LandingPage() {
               ) : (
                 <form onSubmit={handleContactSubmit} className="contact-form" id="landing-contact-form">
                   {[
-                    { id: 'lc-name', icon: <FiUser />, label: 'Name', type: 'text', name: 'name', val: contactForm.name, ph: 'John Doe', req: true },
-                    { id: 'lc-email', icon: <FiMail />, label: 'Email', type: 'email', name: 'email', val: contactForm.email, ph: 'john@example.com', req: true },
-                    { id: 'lc-phone', icon: <FiPhone />, label: 'Phone Number', type: 'tel', name: 'phone', val: contactForm.phone, ph: '+1 (123) 456-7890', req: true },
+                    { id: 'lc-name', icon: <FiUser />, label: 'Name', type: 'text', name: 'name', val: contactDetails.name, ph: 'John Doe', req: true },
+                    { id: 'lc-email', icon: <FiMail />, label: 'Email', type: 'email', name: 'email', val: contactDetails.email, ph: 'john@example.com', req: true },
+                    { id: 'lc-phone', icon: <FiPhone />, label: 'Phone Number', type: 'tel', name: 'phone', val: contactDetails.phone, ph: '+1 (123) 456-7890', req: true },
                   ].map((f, i) => (
                     <motion.div
                       key={i}
@@ -501,7 +486,7 @@ export default function LandingPage() {
                   ))}
                   <motion.div className="form-group" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.45 }} viewport={{ once: false }}>
                     <label htmlFor="lc-purpose" className="form-label"><FiMessageSquare /> Purpose</label>
-                    <select id="lc-purpose" name="purpose" value={contactForm.purpose} onChange={handleContactChange} required className="contact-select">
+                    <select id="lc-purpose" name="purpose" value={contactDetails.purpose} onChange={handleContactChange} required className="contact-select">
                       <option value="" disabled>Select a purpose</option>
                       <option value="general">General Inquiry</option>
                       <option value="partnership">Partnership / B2B</option>
@@ -514,7 +499,7 @@ export default function LandingPage() {
                   </motion.div>
                   <motion.div className="form-group" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.32, duration: 0.45 }} viewport={{ once: false }}>
                     <label htmlFor="lc-message" className="form-label"><FiMessageSquare /> Message</label>
-                    <textarea id="lc-message" name="message" value={contactForm.message} onChange={handleContactChange} placeholder="Type your message here..." required rows={5} className="contact-textarea" />
+                    <textarea id="lc-message" name="message" value={contactDetails.message} onChange={handleContactChange} placeholder="Type your message here..." required rows={5} className="contact-textarea" />
                   </motion.div>
                   <motion.button
                     type="submit"
@@ -531,7 +516,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Footer ────────────────────────────────────────── */}
       <footer className="landing-footer">
         <div className="footer-main">
           <div className="footer-brand-col">
@@ -597,7 +581,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
     </div>
   );
 }

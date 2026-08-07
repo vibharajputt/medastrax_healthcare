@@ -20,23 +20,25 @@ public class PatientProfile {
     private String bloodGroup;
     private String emergencyNumber;
     private String preferredLanguage;
-    
     private String existingMedicalCondition;
     private String idProof;
     private String currentMedication;
     private String allergies;
-    
     private Boolean isFirstTimeUser;
     private String hospitalPreference;
     private String prescriptionReportUrl;
 
+    // gamification stuff
     private Integer expPoints = 0;
     private Integer streakDays = 0;
     private String healthBadge;
+
     @Column(columnDefinition = "TEXT")
     private String lastAnalysis;
+
     @Column(columnDefinition = "TEXT")
     private String carePlan;
+
     private java.time.LocalDate lastChecklistDate;
     private Boolean medsChecked = false;
     private Boolean dietChecked = false;
@@ -63,13 +65,15 @@ public class PatientProfile {
     public void setBloodGroup(String bloodGroup) { this.bloodGroup = bloodGroup; }
 
     public String getEmergencyNumber() { return emergencyNumber; }
-    public void setEmergencyNumber(String emergencyNumber) { this.emergencyNumber = emergencyNumber; }
+    public void setEmergencyNumber(String n) { this.emergencyNumber = n; }
 
     public String getPreferredLanguage() { return preferredLanguage; }
     public void setPreferredLanguage(String preferredLanguage) { this.preferredLanguage = preferredLanguage; }
 
     public String getExistingMedicalCondition() { return existingMedicalCondition; }
-    public void setExistingMedicalCondition(String existingMedicalCondition) { this.existingMedicalCondition = existingMedicalCondition; }
+    public void setExistingMedicalCondition(String existingMedicalCondition) {
+        this.existingMedicalCondition = existingMedicalCondition;
+    }
 
     public String getIdProof() { return idProof; }
     public void setIdProof(String idProof) { this.idProof = idProof; }
@@ -87,25 +91,34 @@ public class PatientProfile {
     public void setHospitalPreference(String hospitalPreference) { this.hospitalPreference = hospitalPreference; }
 
     public String getPrescriptionReportUrl() { return prescriptionReportUrl; }
-    public void setPrescriptionReportUrl(String prescriptionReportUrl) { this.prescriptionReportUrl = prescriptionReportUrl; }
+    public void setPrescriptionReportUrl(String url) { this.prescriptionReportUrl = url; }
 
     public Integer getExpPoints() { return expPoints != null ? expPoints : 0; }
     public void setExpPoints(Integer expPoints) { this.expPoints = expPoints; }
+
     public Integer getStreakDays() { return streakDays != null ? streakDays : 0; }
     public void setStreakDays(Integer streakDays) { this.streakDays = streakDays; }
+
     public String getHealthBadge() { return healthBadge; }
     public void setHealthBadge(String healthBadge) { this.healthBadge = healthBadge; }
+
     public String getLastAnalysis() { return lastAnalysis; }
     public void setLastAnalysis(String lastAnalysis) { this.lastAnalysis = lastAnalysis; }
+
     public String getCarePlan() { return carePlan; }
     public void setCarePlan(String carePlan) { this.carePlan = carePlan; }
+
     public java.time.LocalDate getLastChecklistDate() { return lastChecklistDate; }
-    public void setLastChecklistDate(java.time.LocalDate lastChecklistDate) { this.lastChecklistDate = lastChecklistDate; }
+    public void setLastChecklistDate(java.time.LocalDate lastChecklistDate) {
+        this.lastChecklistDate = lastChecklistDate;
+    }
+
     public Boolean getMedsChecked() { return medsChecked != null ? medsChecked : false; }
     public void setMedsChecked(Boolean medsChecked) { this.medsChecked = medsChecked; }
+
     public Boolean getDietChecked() { return dietChecked != null ? dietChecked : false; }
     public void setDietChecked(Boolean dietChecked) { this.dietChecked = dietChecked; }
+
     public Boolean getExerciseChecked() { return exerciseChecked != null ? exerciseChecked : false; }
     public void setExerciseChecked(Boolean exerciseChecked) { this.exerciseChecked = exerciseChecked; }
 }
-

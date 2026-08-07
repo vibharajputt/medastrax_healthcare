@@ -33,17 +33,17 @@ public class PrescriptionController {
             @RequestBody PrescriptionRequest request,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long doctorId = getUserIdFromToken(authHeader);
+            Long doctorId = extractUserId(authHeader);
             Prescription prescription = prescriptionService.createPrescription(request, doctorId);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", prescription.getId());
-            response.put("diagnosis", prescription.getDiagnosis());
-            response.put("hasTests", prescription.getHasTests());
-            response.put("routeType", prescription.getRouteType());
-            response.put("status", prescription.getStatus());
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", prescription.getId());
+            data.put("diagnosis", prescription.getDiagnosis());
+            data.put("hasTests", prescription.getHasTests());
+            data.put("routeType", prescription.getRouteType());
+            data.put("status", prescription.getStatus());
 
-            return ResponseEntity.ok(ApiResponse.success("Prescription created and analyzed!", response));
+            return ResponseEntity.ok(ApiResponse.success("Prescription created and analyzed!", data));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
@@ -54,7 +54,7 @@ public class PrescriptionController {
             @RequestParam(required = false) Long familyMemberId,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            Long patientId = getUserIdFromToken(authHeader);
+            Long patientId = extractUserId(authHeader);
             List<Prescription> prescriptions = prescriptionService.getPatientPrescriptions(patientId, familyMemberId);
             return ResponseEntity.ok(prescriptions.stream().map(this::toMap).collect(Collectors.toList()));
         } catch (RuntimeException e) {
@@ -65,7 +65,7 @@ public class PrescriptionController {
     @GetMapping("/doctor")
     public ResponseEntity<?> getDoctorPrescriptions(@RequestHeader("Authorization") String authHeader) {
         try {
-            Long doctorId = getUserIdFromToken(authHeader);
+            Long doctorId = extractUserId(authHeader);
             List<Prescription> prescriptions = prescriptionService.getDoctorPrescriptions(doctorId);
             return ResponseEntity.ok(prescriptions.stream().map(this::toMap).collect(Collectors.toList()));
         } catch (RuntimeException e) {
@@ -128,33 +128,6 @@ public class PrescriptionController {
         }
     }
 
-    private Map<String, Object> toMap(Prescription p) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", p.getId());
-        map.put("diagnosis", p.getDiagnosis());
-        map.put("medicines", p.getMedicines());
-        map.put("tests", p.getTests());
-        map.put("notes", p.getNotes());
-        map.put("hasTests", p.getHasTests());
-        map.put("routeType", p.getRouteType());
-        map.put("status", p.getStatus());
-        map.put("patientId", p.getPatient().getId());
-        map.put("patientName", p.getPatient().getName());
-        if (p.getFamilyMember() != null) {
-            map.put("familyMemberId", p.getFamilyMember().getId());
-            map.put("familyMemberName", p.getFamilyMember().getName());
-        }
-        map.put("doctorId", p.getDoctor().getId());
-        map.put("doctorName", p.getDoctor().getName());
-        map.put("createdAt", p.getCreatedAt());
-        if (p.getBooking() != null) {
-            map.put("bookingId", p.getBooking().getId());
-        }
-        map.put("reportUrls", p.getReportUrls());
-        map.put("aiSummary", p.getAiSummary());
-        return map;
-    }
-
     @PutMapping("/{id}/upload-report")
     public ResponseEntity<?> uploadReport(
             @PathVariable Long id,
@@ -168,10 +141,36 @@ public class PrescriptionController {
         }
     }
 
-    private Long getUserIdFromToken(String authHeader) {
+    private Map<String, Object> toMap(Prescription p) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("id", p.getId());
+        m.put("diagnosis", p.getDiagnosis());
+        m.put("medicines", p.getMedicines());
+        m.put("tests", p.getTests());
+        m.put("notes", p.getNotes());
+        m.put("hasTests", p.getHasTests());
+        m.put("routeType", p.getRouteType());
+        m.put("status", p.getStatus());
+        m.put("patientId", p.getPatient().getId());
+        m.put("patientName", p.getPatient().getName());
+        if (p.getFamilyMember() != null) {
+            m.put("familyMemberId", p.getFamilyMember().getId());
+            m.put("familyMemberName", p.getFamilyMember().getName());
+        }
+        m.put("doctorId", p.getDoctor().getId());
+        m.put("doctorName", p.getDoctor().getName());
+        m.put("createdAt", p.getCreatedAt());
+        if (p.getBooking() != null) {
+            m.put("bookingId", p.getBooking().getId());
+        }
+        m.put("reportUrls", p.getReportUrls());
+        m.put("aiSummary", p.getAiSummary());
+        return m;
+    }
+
+    private Long extractUserId(String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String email = tokenProvider.getEmailFromToken(token);
-        User user = authService.getUserByEmail(email);
-        return user.getId();
+        return authService.getUserByEmail(email).getId();
     }
 }

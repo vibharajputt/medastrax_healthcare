@@ -3,12 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 
-// Common
 import Navbar from './components/common/Navbar';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import GlobalQueryBot from './components/common/GlobalQueryBot';
 
-// Auth Pages
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import LandingPage from './pages/LandingPage';
@@ -18,7 +16,6 @@ import HelpCenterPage from './pages/HelpCenterPage';
 import SupportPage from './pages/SupportPage';
 import FAQPage from './pages/FAQPage';
 
-// Patient Pages
 import PatientDashboard from './pages/patient/PatientDashboard';
 import CarePlan from './pages/patient/CarePlan';
 import BookingPage from './pages/patient/BookingPage';
@@ -29,34 +26,31 @@ import DiagnosticOrderFlow from './pages/patient/DiagnosticOrderFlow';
 import EmergencyPage from './pages/patient/EmergencyPage';
 import TrackAmbulancePage from './pages/patient/TrackAmbulancePage';
 
-// Doctor Pages
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
 
-// Consultation Page
 import ConsultationRoom from './pages/ConsultationRoom';
 import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard';
 import LabDashboard from './pages/lab/LabDashboard';
-// import PrescriptionQueue from './pages/pharmacy/PrescriptionQueue';
-
-// Hospital Pages
 import HospitalDashboard from './pages/hospital/HospitalDashboard';
-
-// Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 
+// banner that shows system-wide messages from admin
 function BroadcastBanner() {
   const [msg, setMsg] = useState('');
+
   useEffect(() => {
-    const checkBroadcast = () => {
+    const checkMsg = () => {
       const active = localStorage.getItem('medastrax_global_broadcast');
       setMsg(active || '');
     };
-    checkBroadcast();
-    window.addEventListener('storage', checkBroadcast);
-    const interval = setInterval(checkBroadcast, 2500);
+
+    checkMsg();
+    window.addEventListener('storage', checkMsg);
+    const timer = setInterval(checkMsg, 2500);
+
     return () => {
-      window.removeEventListener('storage', checkBroadcast);
-      clearInterval(interval);
+      window.removeEventListener('storage', checkMsg);
+      clearInterval(timer);
     };
   }, []);
 
@@ -78,10 +72,10 @@ function BroadcastBanner() {
       position: 'relative',
       zIndex: 99999,
       fontFamily: 'sans-serif',
-      letterSpacing: '0.3px'
+      letterSpacing: '0.3px',
     }}>
       <span>⚠️ SYSTEM ANNOUNCEMENT: {msg}</span>
-      <button 
+      <button
         onClick={() => {
           localStorage.removeItem('medastrax_global_broadcast');
           setMsg('');
@@ -99,7 +93,7 @@ function BroadcastBanner() {
           cursor: 'pointer',
           fontSize: '0.8rem',
           fontWeight: 'bold',
-          transition: 'background 0.2s'
+          transition: 'background 0.2s',
         }}
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)'}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)'}
@@ -115,7 +109,7 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="app">
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,
@@ -136,10 +130,9 @@ function App() {
           />
           <BroadcastBanner />
           <Navbar />
-          
+
           <main className="main-content">
             <Routes>
-              {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
@@ -150,7 +143,6 @@ function App() {
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/track-ambulance" element={<TrackAmbulancePage />} />
 
-              {/* Patient Routes */}
               <Route path="/dashboard" element={
                 <ProtectedRoute allowedRoles={['PATIENT']}>
                   <PatientDashboard />
@@ -191,54 +183,47 @@ function App() {
                   <DiagnosticOrderFlow />
                 </ProtectedRoute>
               } />
-              
-              {/* Consultation Routes */}
+
               <Route path="/consultation/:bookingId" element={
                 <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR']}>
                   <ConsultationRoom />
                 </ProtectedRoute>
               } />
 
-              {/* Doctor Routes */}
               <Route path="/doctor/dashboard" element={
                 <ProtectedRoute allowedRoles={['DOCTOR']}>
                   <DoctorDashboard />
                 </ProtectedRoute>
               } />
 
-              {/* Pharmacy Routes */}
               <Route path="/pharmacy/dashboard" element={
                 <ProtectedRoute allowedRoles={['PHARMACY']}>
                   <PharmacyDashboard />
                 </ProtectedRoute>
               } />
 
-              {/* Lab Routes */}
               <Route path="/lab/dashboard" element={
                 <ProtectedRoute allowedRoles={['LAB']}>
                   <LabDashboard />
                 </ProtectedRoute>
               } />
 
-              {/* Hospital Routes */}
               <Route path="/hospital/dashboard" element={
                 <ProtectedRoute allowedRoles={['HOSPITAL']}>
                   <HospitalDashboard />
                 </ProtectedRoute>
               } />
 
-              {/* Admin Routes */}
               <Route path="/admin/dashboard" element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
 
-              {/* Fallback */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>
-          
+
           <GlobalQueryBot />
         </div>
       </Router>

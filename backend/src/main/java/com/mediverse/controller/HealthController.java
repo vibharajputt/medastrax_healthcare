@@ -12,9 +12,9 @@ public class HealthController {
 
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("message", "Mediverse Backend is running!");
-        return ResponseEntity.ok(response);
+        Map<String, String> status = new HashMap<>();
+        status.put("status", "UP");
+        status.put("message", "Mediverse Backend is running!");
+        return ResponseEntity.ok(status);
     }
 }

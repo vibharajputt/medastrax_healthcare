@@ -1,41 +1,16 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import './responsive.css'
-import { GoogleOAuthProvider } from '@react-oauth/google'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import App from './App.jsx';
+import './index.css';
 
-// Initialize theme immediately
-const savedTheme = localStorage.getItem('theme') || 'system';
-if (savedTheme === 'system') {
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-} else {
-  document.documentElement.setAttribute('data-theme', savedTheme);
-}
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  '1001867866929-r13q1v7c1b3fj0dofvl2bde9bcq2pkbu.apps.googleusercontent.com';
 
-
-// Google OAuth Client ID (loaded from environment variable, with the real client ID as fallback)
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '960060668637-sf0cb0qje1ub9jl040338d0lf6jk5odk.apps.googleusercontent.com';
-
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <App />
     </GoogleOAuthProvider>
-  </React.StrictMode>,
-)
-
-// Register Progressive Web App Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((reg) => {
-        console.log('PWA ServiceWorker registered with scope: ', reg.scope);
-      })
-      .catch((err) => {
-        console.warn('PWA ServiceWorker registration failed: ', err);
-      });
-  });
-}
+  </StrictMode>
+);
