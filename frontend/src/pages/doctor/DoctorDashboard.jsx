@@ -429,7 +429,7 @@ export default function DoctorDashboard() {
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(20);
     doc.setTextColor(29, 158, 117);
-    doc.text('MedVerse Digital Prescription', pageWidth / 2, y, { align: 'center' });
+    doc.text('MedAstraX Digital Prescription', pageWidth / 2, y, { align: 'center' });
     y += 15;
 
     doc.setFontSize(12);
@@ -525,7 +525,7 @@ export default function DoctorDashboard() {
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(20);
     doc.setTextColor(29, 158, 117);
-    doc.text('MedVerse Digital Prescription', pageWidth / 2, y, { align: 'center' });
+    doc.text('MedAstraX Digital Prescription', pageWidth / 2, y, { align: 'center' });
     y += 15;
 
     doc.setFontSize(12);
@@ -916,7 +916,7 @@ export default function DoctorDashboard() {
         doc.setFont('Helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text(`MedVerse Clinical Report - Patient: ${appt.patientName}`, margin, 10);
+        doc.text(`MedAstraX Report - Patient: ${appt.patientName}`, margin, 10);
         doc.setDrawColor(220, 220, 220);
         doc.line(margin, 12, pageWidth - margin, 12);
         y = 20;
@@ -927,7 +927,7 @@ export default function DoctorDashboard() {
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(18);
     doc.setTextColor(29, 158, 117);
-    doc.text('MEDVERSE AI CLINICAL REPORT', pageWidth / 2, y, { align: 'center' });
+    doc.text('MEDASTRAX REPORT', pageWidth / 2, y, { align: 'center' });
     y += 8;
 
     doc.setDrawColor(29, 158, 117);
@@ -1065,7 +1065,7 @@ export default function DoctorDashboard() {
     doc.setTextColor(150, 150, 150);
     doc.text('This is an AI-generated consultation report and is intended for clinical review.', margin, y);
     y += 4;
-    doc.text(`Generated on ${new Date().toLocaleDateString()} by MedVerse AI Scribe companion.`, margin, y);
+    doc.text(`Generated on ${new Date().toLocaleDateString()} by MedAstraX Scribe companion.`, margin, y);
 
     const filename = `Clinical_Report_${(appt.patientName || 'Patient').replace(/\s+/g, '_')}.pdf`;
     doc.save(filename);
@@ -1091,7 +1091,7 @@ export default function DoctorDashboard() {
         doc.setFont('Helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text(`MedVerse Previous Prescription Summary - Patient: ${appt.patientName}`, margin, 10);
+        doc.text(`MedAstraX Previous Prescription Summary - Patient: ${appt.patientName}`, margin, 10);
         doc.setDrawColor(220, 220, 220);
         doc.line(margin, 12, pageWidth - margin, 12);
         y = 20;
@@ -1102,7 +1102,7 @@ export default function DoctorDashboard() {
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(18);
     doc.setTextColor(29, 158, 117);
-    doc.text('MEDVERSE AI PRESCRIPTION SUMMARY', pageWidth / 2, y, { align: 'center' });
+    doc.text('MEDASTRAX PRESCRIPTION SUMMARY', pageWidth / 2, y, { align: 'center' });
     y += 8;
 
     doc.setDrawColor(29, 158, 117);
@@ -1240,7 +1240,7 @@ export default function DoctorDashboard() {
     doc.setTextColor(150, 150, 150);
     doc.text('This is an AI-generated analysis of the patient\'s uploaded prescription and is intended for clinical review.', margin, y);
     y += 4;
-    doc.text(`Generated on ${new Date().toLocaleDateString()} by MedVerse AI Scribe companion.`, margin, y);
+    doc.text(`Generated on ${new Date().toLocaleDateString()} by MedAstraX Scribe companion.`, margin, y);
 
     const filename = `Prev_Prescription_Summary_${(appt.patientName || 'Patient').replace(/\s+/g, '_')}.pdf`;
     doc.save(filename);

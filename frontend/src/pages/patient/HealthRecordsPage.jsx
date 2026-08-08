@@ -131,7 +131,7 @@ export default function HealthRecordsPage() {
         doc.setFont('Helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text(`MedVerse Clinical Summary Report - Patient: ${record.patientName}`, margin, 10);
+        doc.text(`MedAstraX Report - Patient: ${record.patientName}`, margin, 10);
         doc.line(margin, 12, pageWidth - margin, 12);
         currentY = 20;
       }
@@ -141,7 +141,7 @@ export default function HealthRecordsPage() {
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(20);
     doc.setTextColor(0, 217, 166); // primary mediverse theme color
-    doc.text('MEDVERSE HEALTH RECORD SUMMARY', pageWidth / 2, currentY, { align: 'center' });
+    doc.text('MEDASTRAX HEALTH RECORD SUMMARY', pageWidth / 2, currentY, { align: 'center' });
     currentY += 8;
 
     doc.setDrawColor(0, 217, 166);
