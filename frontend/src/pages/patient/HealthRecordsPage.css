@@ -22,13 +22,13 @@
 .records-title {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0;
 }
 
 .records-subtitle {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin: 4px 0 0;
 }
 
@@ -37,12 +37,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   padding: 0.75rem 1rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
 }
 
 .selector-label {
@@ -51,7 +52,7 @@
   gap: 6px;
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
 }
 
 .role-tabs {
@@ -62,8 +63,8 @@
 
 .role-tab-btn {
   background: transparent;
-  border: 1px solid var(--border-color, #2a2a3e);
-  color: var(--text-secondary);
+  border: 1px solid var(--border-color, #EADFF2);
+  color: var(--text-secondary, #5A5570);
   padding: 0.35rem 1rem;
   border-radius: 8px;
   font-size: 0.82rem;
@@ -110,8 +111,8 @@
 }
 
 .status-badge-card {
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 10px;
   padding: 0.5rem;
   text-align: center;
@@ -119,6 +120,7 @@
   transition: all 0.2s;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
 }
 
 .status-badge-card:hover {
@@ -127,14 +129,14 @@
 
 .count-label {
   font-size: 0.72rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   font-weight: 600;
 }
 
 .count-value {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin-top: 2px;
 }
 
@@ -150,8 +152,8 @@
   font-weight: 600;
   border-radius: 20px;
   background: transparent;
-  border: 1px solid var(--border-color, #2a2a3e);
-  color: var(--text-secondary);
+  border: 1px solid var(--border-color, #EADFF2);
+  color: var(--text-secondary, #5A5570);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -162,14 +164,14 @@
 }
 
 .status-pill.active {
-  background: rgba(0, 217, 166, 0.15);
+  background: rgba(0, 217, 166, 0.1);
   border-color: #00d9a6;
   color: #00d9a6;
 }
 
 .records-list-wrapper {
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 14px;
   padding: 0.75rem;
   max-height: 600px;
@@ -177,11 +179,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
 }
 
 .record-item-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: rgba(0, 0, 0, 0.01);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 10px;
   padding: 0.85rem;
   cursor: pointer;
@@ -190,7 +193,7 @@
 
 .record-item-card:hover {
   border-color: rgba(0, 217, 166, 0.3);
-  background: rgba(0, 217, 166, 0.02);
+  background: rgba(0, 217, 166, 0.01);
 }
 
 .record-item-card.active {
@@ -201,7 +204,7 @@
 .record-patient {
   font-weight: 700;
   font-size: 0.9rem;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
 }
 
 .followup-badge {
@@ -214,31 +217,32 @@
 
 .record-doc {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin-top: 4px;
 }
 
 .record-facility {
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: var(--text-muted, #8E8DAA);
 }
 
 .records-loading, .records-empty {
   text-align: center;
   padding: 2rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   font-size: 0.88rem;
 }
 
 /* Right Panel */
 .records-detail-panel {
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 16px;
   padding: 1.5rem;
   min-height: 450px;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.02);
 }
 
 .record-details-card {
@@ -251,7 +255,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 1px solid var(--border-color, #2a2a3e);
+  border-bottom: 1px solid var(--border-color, #EADFF2);
   padding-bottom: 1rem;
   flex-wrap: wrap;
   gap: 12px;
@@ -260,13 +264,13 @@
 .record-detail-header h2 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0;
 }
 
 .record-detail-header p {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin: 4px 0 0;
 }
 
@@ -285,7 +289,7 @@
 }
 
 .meta-lbl {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   font-weight: 600;
 }
 
@@ -315,7 +319,7 @@
 .detail-section h3 {
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 0.5rem;
   display: flex;
   align-items: center;
@@ -323,24 +327,24 @@
 }
 
 .detail-text-box {
-  background: rgba(255, 255, 255, 0.01);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: rgba(0, 0, 0, 0.01);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 8px;
   padding: 0.75rem 1rem;
   font-size: 0.88rem;
   line-height: 1.5;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
 }
 
 .note-view {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.01);
   border-left: 3px solid #00d9a6;
   font-style: italic;
 }
 
 /* Form Panel */
 .followup-edit-form {
-  border-top: 1px solid var(--border-color, #2a2a3e);
+  border-top: 1px solid var(--border-color, #EADFF2);
   padding-top: 1.5rem;
   margin-top: 1.5rem;
 }
@@ -353,7 +357,7 @@
 
 .hint-text {
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: var(--text-muted, #8E8DAA);
   margin-top: -6px;
   margin-bottom: 1rem;
 }
@@ -366,17 +370,17 @@
   display: block;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin-bottom: 0.35rem;
 }
 
 .form-select, .form-textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  background: rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: #ffffff;
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 8px;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   font-size: 0.88rem;
   outline: none;
   font-family: inherit;
@@ -385,6 +389,7 @@
 
 .form-select:focus, .form-textarea:focus {
   border-color: #00d9a6;
+  box-shadow: 0 0 0 2px rgba(0, 217, 166, 0.1);
 }
 
 .no-record-selected {
@@ -393,7 +398,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   text-align: center;
   padding: 3rem;
 }
@@ -401,7 +406,7 @@
 .no-record-selected h3 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 0.5rem;
 }
 
