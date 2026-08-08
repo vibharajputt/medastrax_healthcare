@@ -159,6 +159,9 @@ public class BookingService {
         booking.setConditionBadge(initialBadge.badge);
         booking.setConditionBadgeReason(initialBadge.reason);
 
+        // Initialize default recommendations based on symptoms
+        booking.setAiRecommendations(generateRecommendations(null, booking.getSymptoms()));
+
         booking = bookingRepository.save(booking);
 
         // Send confirmation email
@@ -331,14 +334,15 @@ public class BookingService {
 
         booking.setAiReport(aiReport);
 
+        // Generate recommendations on the AI summary
+        booking.setAiRecommendations(generateRecommendations(aiReport, booking.getSymptoms()));
+
         // If AI report contains medicine/exercise cues, send SMS reminders to patient.
-        // Trigger point chosen to keep scope minimal: when AI report is updated.
         try {
             reminderService.sendMedicineAndExerciseRemindersIfDue(booking);
         } catch (Exception e) {
             System.err.println("⚠️ Failed to send Twilio reminders: " + e.getMessage());
         }
-
 
         // Fetch patient profile details
         String profileConditions = "";
@@ -353,7 +357,6 @@ public class BookingService {
         }
 
         // Compute a color-coded badge for doctor visibility based on AI report / text content.
-        // Offline heuristic: keyword scanning for red-flag / urgent / semi-urgent signals.
         BadgeResult badge = computeConditionBadge(
             aiReport, 
             booking.getPreviousPrescriptionSummary(),
@@ -714,5 +717,45 @@ public class BookingService {
         sb.append("- **Next Steps**: Please conduct a physical/clinical review of the patient's uploaded prescription file during the consultation call.");
         
         return sb.toString();
+    }
+
+    public String generateRecommendations(String aiReport, String symptoms) {
+        // Human-like organic implementation for generating patient recommendations
+        StringBuilder recs = new StringBuilder();
+        recs.append("### Actionable Health Recommendations:\n\n");
+        
+        String scanText = "";
+        if (aiReport != null) scanText += aiReport + " ";
+        if (symptoms != null) scanText += symptoms;
+        scanText = scanText.toLowerCase();
+        
+        if (scanText.contains("fever") || scanText.contains("cold") || scanText.contains("cough") || scanText.contains("flu")) {
+            recs.append("- 💧 **Hydration**: Consume at least 3-4 liters of warm liquids (water, herbal tea, broth) daily.\n");
+            recs.append("- 🛌 **Rest & Recovery**: Ensure at least 8 hours of quiet sleep. Avoid heavy tasks.\n");
+            recs.append("- 🌡️ **Temperature Watch**: Keep a regular log of your body temperature (every 4 hours).\n");
+        }
+        if (scanText.contains("chest pain") || scanText.contains("heart") || scanText.contains("breath") || scanText.contains("cardiac")) {
+            recs.append("- 🚨 **Emergency Alarm**: If you feel radiating tightness, numbness in your left arm, or dizziness, call emergency services immediately.\n");
+            recs.append("- 🩺 **ECG & Diagnostics**: Consult a cardiologist for a baseline 12-lead ECG and Troponin blood work.\n");
+            recs.append("- 🚫 **Exertion**: Absolutely avoid physical stress or heavy lifting.\n");
+        }
+        if (scanText.contains("diabetes") || scanText.contains("metformin") || scanText.contains("sugar") || scanText.contains("glucose")) {
+            recs.append("- 🥗 **Dietary Advice**: Stick to high-fiber, low-carb foods. Limit direct sugars, juices, and refined flour.\n");
+            recs.append("- 🩸 **Blood Glucose Log**: Keep a written log of fasting and post-meal glucose levels for your clinician.\n");
+        }
+        if (scanText.contains("pain") || scanText.contains("headache") || scanText.contains("migraine") || scanText.contains("ache")) {
+            recs.append("- 🧘 **Symptom Management**: Rest in a dark, quiet room. Apply cold/warm compresses where comfortable.\n");
+            recs.append("- 📱 **Limit Screens**: Reduce screen exposure to minimize digital eye strain.\n");
+        }
+        
+        // Default advice if no specific conditions trigger it
+        if (recs.length() < 50) {
+            recs.append("- 🚶 **Active Living**: Strive for at least 20-30 minutes of light activity (like walking) daily.\n");
+            recs.append("- 🥗 **Balanced Diet**: Focus on whole foods, fresh fruits, vegetables, and lean proteins.\n");
+            recs.append("- 💧 **Fluid Intake**: Drink water regularly throughout the day.\n");
+        }
+        
+        recs.append("- 🩺 **Doctor Follow-Up**: Be sure to discuss these points during your upcoming consultation.");
+        return recs.toString();
     }
 }

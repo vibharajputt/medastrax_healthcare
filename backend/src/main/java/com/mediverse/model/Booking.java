@@ -77,6 +77,14 @@ public class Booking {
     @Column(columnDefinition = "TEXT")
     private String previousPrescriptionSummary;
 
+    private String followUpStatus; // "NONE", "PENDING", "SCHEDULED", "COMPLETED"
+
+    @Column(columnDefinition = "TEXT")
+    private String clinicianNote;
+
+    @Column(columnDefinition = "TEXT")
+    private String aiRecommendations;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -84,6 +92,7 @@ public class Booking {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) status = BookingStatus.PENDING;
+        if (followUpStatus == null) followUpStatus = "NONE";
     }
 
     public enum BookingStatus {
@@ -193,6 +202,15 @@ public class Booking {
         this.previousPrescriptionSummary = previousPrescriptionSummary;
     }
 
+    public String getFollowUpStatus() { return followUpStatus; }
+    public void setFollowUpStatus(String followUpStatus) { this.followUpStatus = followUpStatus; }
+
+    public String getClinicianNote() { return clinicianNote; }
+    public void setClinicianNote(String clinicianNote) { this.clinicianNote = clinicianNote; }
+
+    public String getAiRecommendations() { return aiRecommendations; }
+    public void setAiRecommendations(String aiRecommendations) { this.aiRecommendations = aiRecommendations; }
+
     public static BookingBuilder builder() {
         return new BookingBuilder();
     }
@@ -235,8 +253,15 @@ public class Booking {
         public BookingBuilder symptoms(String symptoms) { this.symptoms = symptoms; return this; }
         public BookingBuilder paymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; return this; }
         public BookingBuilder paymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; return this; }
+        private String followUpStatus;
+        private String clinicianNote;
+        private String aiRecommendations;
+
         public BookingBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public BookingBuilder previousPrescriptionSummary(String s) { this.previousPrescriptionSummary = s; return this; }
+        public BookingBuilder followUpStatus(String s) { this.followUpStatus = s; return this; }
+        public BookingBuilder clinicianNote(String s) { this.clinicianNote = s; return this; }
+        public BookingBuilder aiRecommendations(String s) { this.aiRecommendations = s; return this; }
 
         public Booking build() {
             Booking b = new Booking(id, patient, doctor, hospital, bookingDate, timeSlot, status,
@@ -244,6 +269,9 @@ public class Booking {
                     paymentMethod, paymentStatus, createdAt);
             b.setFamilyMember(familyMember);
             b.setPreviousPrescriptionSummary(previousPrescriptionSummary);
+            b.setFollowUpStatus(followUpStatus != null ? followUpStatus : "NONE");
+            b.setClinicianNote(clinicianNote);
+            b.setAiRecommendations(aiRecommendations);
             return b;
         }
     }

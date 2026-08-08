@@ -211,10 +211,87 @@ public class BookingController {
         map.put("conditionBadge", booking.getConditionBadge());
         map.put("conditionBadgeReason", booking.getConditionBadgeReason());
         map.put("previousPrescriptionSummary", booking.getPreviousPrescriptionSummary());
+        map.put("followUpStatus", booking.getFollowUpStatus() != null ? booking.getFollowUpStatus() : "NONE");
+        map.put("clinicianNote", booking.getClinicianNote() != null ? booking.getClinicianNote() : "");
+        map.put("aiRecommendations", booking.getAiRecommendations() != null ? booking.getAiRecommendations() : "");
 
         PatientProfile pProfile = authService.getPatientProfile(booking.getPatient().getId());
         map.put("healthBadge", pProfile != null ? pProfile.getHealthBadge() : null);
         return map;
+    }
+
+    @PutMapping("/{id}/follow-up")
+    public ResponseEntity<?> updateFollowUp(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            Long userId = extractUserId(authHeader);
+            String followUpStatus = body.getOrDefault("followUpStatus", "NONE").toUpperCase();
+            String clinicianNote = body.getOrDefault("clinicianNote", "");
+            
+            Booking booking = bookingService.getBookingById(id);
+            booking.setFollowUpStatus(followUpStatus);
+            booking.setClinicianNote(clinicianNote);
+            
+            if (body.containsKey("aiRecommendations")) {
+                booking.setAiRecommendations(body.get("aiRecommendations"));
+            }
+            
+            booking = bookingService.updateBookingStatus(id, booking.getStatus().name(), userId);
+            
+            return ResponseEntity.ok(ApiResponse.success("Follow-up updated successfully!", toMap(booking)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/role-records")
+    public ResponseEntity<?> getRoleRecords(
+            @RequestParam(required = false, defaultValue = "PATIENT") String role,
+            @RequestParam(required = false) String status,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            Long userId = extractUserId(authHeader);
+            
+            List<Booking> list = new ArrayList<>();
+            String targetRole = role.toUpperCase();
+            
+            if ("PATIENT".equals(targetRole)) {
+                list = bookingService.getPatientBookings(userId);
+            } else if ("DOCTOR".equals(targetRole)) {
+                list = bookingService.getDoctorBookings(userId);
+            } else {
+                list = bookingService.getDoctorBookings(userId);
+            }
+            
+            if (status != null && !status.trim().isEmpty() && !"ALL".equalsIgnoreCase(status)) {
+                final String finalStatus = status.trim().toUpperCase();
+                list = list.stream()
+                        .filter(b -> finalStatus.equalsIgnoreCase(b.getFollowUpStatus()))
+                        .collect(Collectors.toList());
+            }
+            
+            long totalCount = list.size();
+            long pendingCount = list.stream().filter(b -> "PENDING".equalsIgnoreCase(b.getFollowUpStatus())).count();
+            long scheduledCount = list.stream().filter(b -> "SCHEDULED".equalsIgnoreCase(b.getFollowUpStatus())).count();
+            long completedCount = list.stream().filter(b -> "COMPLETED".equalsIgnoreCase(b.getFollowUpStatus())).count();
+            long noneCount = list.stream().filter(b -> b.getFollowUpStatus() == null || "NONE".equalsIgnoreCase(b.getFollowUpStatus())).count();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("records", list.stream().map(this::toMap).collect(Collectors.toList()));
+            response.put("counts", Map.of(
+                "total", totalCount,
+                "pending", pendingCount,
+                "scheduled", scheduledCount,
+                "completed", completedCount,
+                "none", noneCount
+            ));
+            
+            return ResponseEntity.ok(ApiResponse.success("Records fetched successfully", response));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     private Long extractUserId(String authHeader) {

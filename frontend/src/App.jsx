@@ -32,6 +32,7 @@ import ActivityHistoryPage from './pages/patient/ActivityHistoryPage';
 import BackgroundJobsPage from './pages/patient/BackgroundJobsPage';
 import WorkflowsPage from './pages/patient/WorkflowsPage';
 import ObservabilityDashboard from './pages/admin/ObservabilityDashboard';
+import HealthRecordsPage from './pages/patient/HealthRecordsPage';
 
 import ConsultationRoom from './pages/ConsultationRoom';
 import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard';
@@ -213,6 +214,11 @@ function App() {
               <Route path="/observability" element={
                 <ProtectedRoute allowedRoles={['ADMIN', 'DOCTOR']}>
                   <ObservabilityDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/health-records" element={
+                <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN', 'REVIEWER']}>
+                  <HealthRecordsPage />
                 </ProtectedRoute>
               } />
 

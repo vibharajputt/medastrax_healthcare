@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiLogOut, FiUser, FiHome, FiCalendar, FiFileText, FiShoppingBag, FiTrash2, FiCamera, FiActivity, FiBell, FiSettings, FiSun, FiMoon, FiMonitor } from 'react-icons/fi';
+import { FiMenu, FiX, FiLogOut, FiUser, FiHome, FiCalendar, FiFileText, FiShoppingBag, FiTrash2, FiCamera, FiActivity, FiBell, FiSettings, FiSun, FiMoon, FiMonitor, FiCpu, FiGitBranch } from 'react-icons/fi';
 import logo from '../../assets/medastrax-logo-new.png';
 import toast from 'react-hot-toast';
 import { familyMemberAPI, fileAPI, authAPI, notificationAPI } from '../../services/api';
@@ -539,7 +539,10 @@ export default function Navbar() {
           { path: '/dashboard', label: 'Hospitals', icon: <FiHome /> },
           { path: '/my-bookings', label: 'My Bookings', icon: <FiCalendar /> },
           { path: '/my-prescriptions', label: 'Prescriptions', icon: <FiFileText /> },
-          { path: '/my-prescriptions', label: 'Order Medicines', icon: <FiShoppingBag /> },
+          { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
+          { path: '/activity', label: 'History', icon: <FiActivity /> },
+          { path: '/background-jobs', label: 'Tasks', icon: <FiCpu /> },
+          { path: '/workflows', label: 'Workflows', icon: <FiGitBranch /> },
           { path: 'notifications', label: 'Important', icon: <FiBell /> },
         ];
       }
@@ -547,6 +550,8 @@ export default function Navbar() {
         return [
           { path: '/doctor/dashboard', label: 'Dashboard', icon: <FiHome /> },
           { path: 'doctor-schedule', label: 'Schedule', icon: <FiCalendar /> },
+          { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
+          { path: '/observability', label: 'Observability', icon: <FiActivity /> },
           { path: 'notifications', label: 'Important', icon: <FiBell /> },
         ];
       }
@@ -558,6 +563,8 @@ export default function Navbar() {
       if (user?.role === 'ADMIN') {
         return [
           { path: '/admin/dashboard', label: 'Dashboard', icon: <FiHome /> },
+          { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
+          { path: '/observability', label: 'Observability', icon: <FiActivity /> },
         ];
       }
       if (user?.role === 'LAB') {
