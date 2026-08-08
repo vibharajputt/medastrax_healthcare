@@ -30,13 +30,13 @@
 .activity-title {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 0.2rem;
 }
 
 .activity-subtitle {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin: 0;
 }
 
@@ -52,16 +52,16 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
 }
 
 .activity-search {
   width: 100%;
   padding: 0.6rem 0.75rem 0.6rem 2.5rem;
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 10px;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   font-size: 0.9rem;
   outline: none;
   transition: border-color 0.2s;
@@ -79,9 +79,9 @@
 .filter-pill {
   padding: 0.35rem 0.9rem;
   border-radius: 20px;
-  border: 1px solid var(--border-color, #2a2a3e);
+  border: 1px solid var(--border-color, #EADFF2);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   font-size: 0.8rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -109,7 +109,7 @@
 .activity-skeleton {
   height: 72px;
   border-radius: 12px;
-  background: linear-gradient(90deg, var(--card-bg, #1a1a2e) 25%, var(--border-color, #2a2a3e) 50%, var(--card-bg, #1a1a2e) 75%);
+  background: linear-gradient(90deg, var(--bg-card, #ffffff) 25%, var(--border-color, #EADFF2) 50%, var(--bg-card, #ffffff) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -122,11 +122,11 @@
 .activity-empty {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
 }
 
 .empty-icon {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   opacity: 0.4;
   margin-bottom: 1rem;
 }
@@ -134,7 +134,7 @@
 .activity-empty p {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 0.4rem;
 }
 
@@ -172,18 +172,19 @@
   width: 2px;
   flex: 1;
   min-height: 20px;
-  background: var(--border-color, #2a2a3e);
+  background: var(--border-color, #EADFF2);
   margin: 4px 0;
 }
 
 .activity-card {
   flex: 1;
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 12px;
   padding: 0.9rem 1.1rem;
   margin-bottom: 0.75rem;
   transition: border-color 0.2s;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
 }
 
 .activity-card:hover { border-color: rgba(0,217,166,0.3); }
@@ -208,20 +209,20 @@
 
 .activity-time {
   font-size: 0.78rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   flex-shrink: 0;
 }
 
 .activity-summary {
   font-size: 0.9rem;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 0.3rem;
   line-height: 1.4;
 }
 
 .activity-entity {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
 }
 
 .activity-pagination {
@@ -236,9 +237,9 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  border: 1px solid var(--border-color, #2a2a3e);
-  background: var(--card-bg, #1a1a2e);
-  color: var(--text-primary);
+  border: 1px solid var(--border-color, #EADFF2);
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #2D2A3D);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -249,4 +250,4 @@
 .page-btn:hover:not(:disabled) { border-color: #00d9a6; color: #00d9a6; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.page-info { font-size: 0.9rem; color: var(--text-secondary); }
+.page-info { font-size: 0.9rem; color: var(--text-secondary, #5A5570); }

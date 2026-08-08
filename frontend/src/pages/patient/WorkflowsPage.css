@@ -33,13 +33,13 @@
 .wf-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 0.2rem;
 }
 
 .wf-subtitle {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin: 0;
 }
 
@@ -48,8 +48,8 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 1rem;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 12px;
   color: #f59e0b;
   font-size: 0.85rem;
@@ -58,29 +58,28 @@
 }
 
 @keyframes pulse-amber {
-
   0%,
   100% {
     box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
   }
-
   50% {
-    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.1);
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.05);
   }
 }
 
 .wf-start-card {
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 16px;
   padding: 1.4rem;
   margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
 }
 
 .start-title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 1rem;
 }
 
@@ -94,10 +93,10 @@
 
 .start-select {
   padding: 0.6rem 1rem;
-  background: var(--bg-secondary, #0f0f1e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: #ffffff;
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 10px;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   font-size: 0.9rem;
   outline: none;
   cursor: pointer;
@@ -128,7 +127,7 @@
 
 .start-hint {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin: 0;
 }
 
@@ -139,11 +138,12 @@
 }
 
 .wf-card {
-  background: var(--card-bg, #1a1a2e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 16px;
   overflow: hidden;
   transition: border-color 0.2s;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
 }
 
 .wf-card.needs-approval {
@@ -180,13 +180,13 @@
 .wf-type {
   font-size: 0.9rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   text-transform: capitalize;
 }
 
 .wf-desc {
   font-size: 0.78rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin-top: 0.15rem;
 }
 
@@ -214,8 +214,8 @@
   gap: 0.3rem;
   padding: 0.3rem 0.8rem;
   border-radius: 8px;
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
   color: #f59e0b;
   font-size: 0.8rem;
   cursor: pointer;
@@ -224,18 +224,18 @@
 }
 
 .wf-approve-btn:hover {
-  background: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.2);
 }
 
 .wf-expand-btn {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   display: flex;
   align-items: center;
 }
 
 .wf-progress-track {
   height: 3px;
-  background: var(--border-color, #2a2a3e);
+  background: var(--border-color, #EADFF2);
   margin: 0 1.2rem;
 }
 
@@ -247,7 +247,7 @@
 
 .wf-progress-label {
   font-size: 0.72rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   padding: 0.3rem 1.2rem 0.6rem;
   text-align: right;
 }
@@ -262,7 +262,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin: 0.75rem 0 0.6rem;
 }
 
@@ -315,7 +315,7 @@
   width: 2px;
   flex: 1;
   min-height: 16px;
-  background: var(--border-color, #2a2a3e);
+  background: var(--border-color, #EADFF2);
   margin: 3px 0;
 }
 
@@ -327,12 +327,12 @@
 .step-name {
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
 }
 
 .step-meta {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin-top: 0.2rem;
 }
 
@@ -340,7 +340,7 @@
   font-size: 0.8rem;
   color: #10b981;
   margin-top: 0.3rem;
-  background: rgba(16, 185, 129, 0.08);
+  background: rgba(16, 185, 129, 0.06);
   border-radius: 6px;
   padding: 0.4rem;
 }
@@ -349,7 +349,7 @@
   font-size: 0.8rem;
   color: #ef4444;
   margin-top: 0.3rem;
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(239, 68, 68, 0.06);
   border-radius: 6px;
   padding: 0.4rem;
 }
@@ -364,32 +364,32 @@
   gap: 0.6rem;
   flex-wrap: wrap;
   padding: 0.4rem 0;
-  border-top: 1px solid var(--border-color, #2a2a3e);
+  border-top: 1px solid var(--border-color, #EADFF2);
   font-size: 0.78rem;
 }
 
 .audit-action {
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
-  background: rgba(167, 139, 250, 0.15);
+  background: rgba(167, 139, 250, 0.1);
   color: #a78bfa;
   font-weight: 700;
   font-size: 0.72rem;
 }
 
 .audit-step {
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
 }
 
 .audit-time {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin-left: auto;
 }
 
 .audit-detail {
   width: 100%;
   font-size: 0.78rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   padding-left: 0.5rem;
 }
 
@@ -397,7 +397,7 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -407,13 +407,13 @@
 }
 
 .approval-modal {
-  background: var(--card-bg, #1a1a2e);
+  background: var(--bg-card, #ffffff);
   border: 1px solid rgba(245, 158, 11, 0.4);
   border-radius: 20px;
   padding: 2rem;
   max-width: 480px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.1);
 }
 
 .modal-header {
@@ -425,8 +425,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(245, 158, 11, 0.15);
-  border: 2px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.1);
+  border: 2px solid rgba(245, 158, 11, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -438,33 +438,34 @@
 .modal-header h2 {
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0 0 0.4rem;
 }
 
 .modal-header p {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin: 0;
 }
 
 .modal-step-info {
-  background: var(--bg-secondary, #0f0f1e);
+  background: rgba(0, 0, 0, 0.01);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color, #EADFF2);
 }
 
 .modal-step-name {
   font-size: 1rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin-bottom: 0.4rem;
 }
 
 .modal-step-tool {
   font-size: 0.82rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   margin-bottom: 0.6rem;
 }
 
@@ -477,7 +478,7 @@
 
 .modal-step-desc {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   line-height: 1.5;
 }
 
@@ -495,7 +496,7 @@
   padding: 0.65rem 1.2rem;
   border-radius: 10px;
   border: 1px solid rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.05);
   color: #ef4444;
   font-size: 0.9rem;
   font-weight: 600;
@@ -504,7 +505,7 @@
 }
 
 .btn-reject:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .btn-approve {
@@ -533,7 +534,7 @@
 
 .reject-input-group label {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   display: block;
   margin-bottom: 0.5rem;
 }
@@ -541,10 +542,10 @@
 .reject-textarea {
   width: 100%;
   padding: 0.75rem;
-  background: var(--bg-secondary, #0f0f1e);
-  border: 1px solid var(--border-color, #2a2a3e);
+  background: #ffffff;
+  border: 1px solid var(--border-color, #EADFF2);
   border-radius: 10px;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   font-size: 0.88rem;
   resize: vertical;
   outline: none;
@@ -556,9 +557,9 @@
 .btn-cancel {
   padding: 0.65rem 1.2rem;
   border-radius: 10px;
-  border: 1px solid var(--border-color, #2a2a3e);
+  border: 1px solid var(--border-color, #EADFF2);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
   font-size: 0.9rem;
   cursor: pointer;
 }
@@ -585,13 +586,13 @@
 .wf-empty {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
 }
 
 .wf-empty p {
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-primary, #2D2A3D);
   margin: 0.75rem 0 0.3rem;
 }
 
@@ -602,7 +603,7 @@
 .wf-loading {
   text-align: center;
   padding: 2rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #5A5570);
 }
 
 .wf-pagination {
@@ -617,9 +618,9 @@
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  border: 1px solid var(--border-color, #2a2a3e);
-  background: var(--card-bg, #1a1a2e);
-  color: var(--text-primary);
+  border: 1px solid var(--border-color, #EADFF2);
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #2D2A3D);
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.8rem;
