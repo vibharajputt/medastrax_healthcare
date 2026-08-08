@@ -64,6 +64,14 @@ export default function PatientDashboard() {
   const [submittingReschedule, setSubmittingReschedule] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
 
+  // Follow-up Booking States
+  const [followUpBooking, setFollowUpBooking] = useState(null);
+  const [followUpDate, setFollowUpDate] = useState('');
+  const [followUpTimeSlot, setFollowUpTimeSlot] = useState('');
+  const [followUpSlots, setFollowUpSlots] = useState([]);
+  const [loadingFollowUpSlots, setLoadingFollowUpSlots] = useState(false);
+  const [submittingFollowUp, setSubmittingFollowUp] = useState(false);
+
   const [hospitals, setHospitals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -297,6 +305,26 @@ export default function PatientDashboard() {
     fetchRescheduleSlots();
   }, [rescheduleDate, reschedulingBooking]);
 
+  useEffect(() => {
+    const fetchFollowUpSlots = async () => {
+      if (!followUpDate || !followUpBooking) {
+        setFollowUpSlots([]);
+        return;
+      }
+      try {
+        setLoadingFollowUpSlots(true);
+        const res = await bookingAPI.getAvailableSlots(followUpBooking.doctorId, followUpDate);
+        setFollowUpSlots(res.data || []);
+      } catch (error) {
+        toast.error('Failed to load available slots');
+        setFollowUpSlots([]);
+      } finally {
+        setLoadingFollowUpSlots(false);
+      }
+    };
+    fetchFollowUpSlots();
+  }, [followUpDate, followUpBooking]);
+
   const handleRescheduleSubmit = async (e) => {
     e.preventDefault();
     if (!reschedulingBooking || !rescheduleDate || !rescheduleTimeSlot) {
@@ -317,6 +345,49 @@ export default function PatientDashboard() {
       toast.error(errorMsg);
     } finally {
       setSubmittingReschedule(false);
+    }
+  };
+
+  const handleFollowUpSubmit = async (e) => {
+    e.preventDefault();
+    if (!followUpBooking || !followUpDate || !followUpTimeSlot) {
+      toast.error('Please select both date and time slot');
+      return;
+    }
+
+    setSubmittingFollowUp(true);
+    const loadingToast = toast.loading('Scheduling your follow-up appointment...');
+    try {
+      const packedNotes = `Follow-up Visit for previous Booking ID #${followUpBooking.id}. Original Symptoms: ${followUpBooking.symptoms}`;
+      
+      const payload = {
+        hospitalId: followUpBooking.hospitalId,
+        doctorId: followUpBooking.doctorId,
+        bookingDate: followUpDate,
+        timeSlot: followUpTimeSlot,
+        type: followUpBooking.type || 'ONLINE',
+        notes: packedNotes,
+        patientName: followUpBooking.patientName,
+        patientPhone: followUpBooking.patientPhone,
+        age: parseInt(followUpBooking.age),
+        gender: followUpBooking.gender,
+        symptoms: followUpBooking.symptoms,
+        paymentMethod: 'CASH',
+        paymentStatus: 'PENDING',
+        familyMemberId: activeProfile ? activeProfile.id : null
+      };
+
+      await bookingAPI.create(payload);
+      toast.success('Follow-up appointment booked successfully!', { id: loadingToast });
+      setFollowUpBooking(null);
+      setFollowUpDate('');
+      setFollowUpTimeSlot('');
+      fetchBookings();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to schedule follow-up', { id: loadingToast });
+    } finally {
+      setSubmittingFollowUp(false);
     }
   };
 
@@ -1390,7 +1461,14 @@ export default function PatientDashboard() {
                             <FiUser size={18} />
                           </div>
                           <div>
-                            <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '0.92rem' }}>Dr. {booking.doctorName}</div>
+                            <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              Dr. {booking.doctorName}
+                              {booking.notes && booking.notes.includes('Follow-up Visit') && (
+                                <span className="badge" style={{ fontSize: '0.68rem', padding: '2px 8px', background: '#f59e0b', color: 'white', borderRadius: '4px', fontWeight: 'bold' }}>
+                                  Follow-up Visit
+                                </span>
+                              )}
+                            </div>
                             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '2px' }}>{booking.hospitalName}</div>
                           </div>
                         </div>
@@ -1474,6 +1552,27 @@ export default function PatientDashboard() {
                                     title="View AI Consultation Report"
                                   >
                                     <FiCpu size={12} /> Report
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setFollowUpBooking(booking);
+                                      setFollowUpDate('');
+                                      setFollowUpTimeSlot('');
+                                      setFollowUpSlots([]);
+                                    }}
+                                    className="btn btn-sm btn-primary"
+                                    style={{
+                                      padding: '6px 12px',
+                                      fontSize: '0.75rem',
+                                      borderRadius: '99px',
+                                      background: '#f59e0b',
+                                      border: 'none',
+                                      color: 'white',
+                                      fontWeight: 'bold',
+                                    }}
+                                    title="Schedule Follow-up Visit"
+                                  >
+                                    Follow-up
                                   </button>
                                   <button
                                     onClick={() => handleDownloadReportPDF(booking)}
@@ -2732,6 +2831,144 @@ export default function PatientDashboard() {
                   disabled={submittingReschedule || !rescheduleDate || !rescheduleTimeSlot}
                 >
                   {submittingReschedule ? 'Rescheduling...' : 'Confirm'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Follow-up Booking Modal */}
+      {followUpBooking && (
+        <div 
+          className="modal-backdrop animate-fade-in" 
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(5px)',
+            zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+          }}
+          onClick={() => setFollowUpBooking(null)}
+        >
+          <motion.div 
+            className="glass-card modal-content"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            style={{ 
+              maxWidth: '500px', width: '100%',
+              position: 'relative', display: 'flex', flexDirection: 'column', padding: '32px',
+              background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setFollowUpBooking(null)}
+              style={{
+                position: 'absolute', top: '16px', right: '16px',
+                background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', border: 'none',
+                borderRadius: '50%', width: '32px', height: '32px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', zIndex: 10
+              }}
+            >
+              <FiX />
+            </button>
+            
+            <h2 className="heading-sm" style={{ marginBottom: '8px', color: '#f59e0b' }}>Schedule Follow-up Visit</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '24px' }}>
+              Schedule a follow-up consultation with <strong>Dr. {followUpBooking.doctorName}</strong>. 
+            </p>
+
+            <form onSubmit={handleFollowUpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                  <FiCalendar /> Select Date
+                </label>
+                <input 
+                  type="date" 
+                  className="form-input"
+                  min={new Date().toISOString().split('T')[0]}
+                  value={followUpDate}
+                  onChange={(e) => {
+                    setFollowUpDate(e.target.value);
+                    setFollowUpTimeSlot('');
+                  }}
+                  required
+                  style={{
+                    width: '100%',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    padding: '12px 16px',
+                    borderRadius: '8px'
+                  }}
+                />
+              </div>
+
+              {followUpDate && (
+                <div>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <FiClock /> Select Time Slot
+                  </label>
+                  {loadingFollowUpSlots ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px' }}>
+                      <div className="spinner" style={{ width: '16px', height: '16px' }}></div>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Loading slots...</span>
+                    </div>
+                  ) : followUpSlots.length === 0 ? (
+                    <div style={{ padding: '12px', background: 'rgba(255, 82, 82, 0.05)', border: '1px solid rgba(255, 82, 82, 0.1)', borderRadius: '8px', color: 'var(--danger)', fontSize: '0.85rem' }}>
+                      No available slots on this date.
+                    </div>
+                  ) : (
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                      gap: '10px',
+                      maxHeight: '180px',
+                      overflowY: 'auto',
+                      padding: '4px'
+                    }}>
+                      {followUpSlots.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setFollowUpTimeSlot(slot)}
+                          style={{
+                            padding: '10px 8px',
+                            borderRadius: '8px',
+                            fontSize: '0.8rem',
+                            fontWeight: '600',
+                            border: followUpTimeSlot === slot ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                            background: followUpTimeSlot === slot ? 'rgba(0, 217, 166, 0.15)' : 'var(--bg-secondary)',
+                            color: followUpTimeSlot === slot ? 'var(--primary)' : 'var(--text-secondary)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            textAlign: 'center'
+                          }}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setFollowUpBooking(null)}
+                  className="btn btn-outline"
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ flex: 1, background: '#f59e0b', borderColor: '#f59e0b' }}
+                  disabled={submittingFollowUp || !followUpDate || !followUpTimeSlot}
+                >
+                  {submittingFollowUp ? 'Scheduling...' : 'Book Follow-up'}
                 </button>
               </div>
             </form>

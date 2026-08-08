@@ -86,40 +86,20 @@ public class PrescriptionService {
             routeType = Prescription.RouteType.BOTH;
         }
 
-        Prescription prescription = null;
-        if (booking != null) {
-            List<Prescription> existing = prescriptionRepository.findByBookingId(booking.getId());
-            if (existing != null && !existing.isEmpty()) {
-                prescription = existing.get(0);
-            }
-        }
-
-        if (prescription == null) {
-            prescription = Prescription.builder()
-                    .booking(booking)
-                    .patient(patient)
-                    .familyMember(booking != null ? booking.getFamilyMember() : null)
-                    .doctor(doctor)
-                    .diagnosis(request.getDiagnosis())
-                    .medicines(medicinesJson)
-                    .tests(testsJson)
-                    .notes(request.getNotes())
-                    .hasTests(hasTests)
-                    .status(Prescription.PrescriptionStatus.ACTIVE)
-                    .routeType(routeType)
-                    .build();
-        } else {
-            prescription.setPatient(patient);
-            prescription.setFamilyMember(booking != null ? booking.getFamilyMember() : null);
-            prescription.setDoctor(doctor);
-            prescription.setDiagnosis(request.getDiagnosis());
-            prescription.setMedicines(medicinesJson);
-            prescription.setTests(testsJson);
-            prescription.setNotes(request.getNotes());
-            prescription.setHasTests(hasTests);
-            prescription.setStatus(Prescription.PrescriptionStatus.ACTIVE);
-            prescription.setRouteType(routeType);
-        }
+        // Always create a new prescription row so that past prescriptions remain intact in patient history records
+        Prescription prescription = Prescription.builder()
+                .booking(booking)
+                .patient(patient)
+                .familyMember(booking != null ? booking.getFamilyMember() : null)
+                .doctor(doctor)
+                .diagnosis(request.getDiagnosis())
+                .medicines(medicinesJson)
+                .tests(testsJson)
+                .notes(request.getNotes())
+                .hasTests(hasTests)
+                .status(Prescription.PrescriptionStatus.ACTIVE)
+                .routeType(routeType)
+                .build();
 
         prescription = prescriptionRepository.save(prescription);
 
