@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .navbar-brand {
@@ -87,16 +87,21 @@
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
   text-decoration: none;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   transition: all var(--transition-normal);
-  flex-shrink: 0;
-  white-space: nowrap;
+  flex-shrink: 1;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-height: 1.2;
+  text-align: center;
+  max-width: 105px;
 }
 
 .nav-link:hover {

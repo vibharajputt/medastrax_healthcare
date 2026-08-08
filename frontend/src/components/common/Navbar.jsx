@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiLogOut, FiUser, FiHome, FiCalendar, FiFileText, FiShoppingBag, FiTrash2, FiCamera, FiActivity, FiBell, FiSettings, FiSun, FiMoon, FiMonitor, FiCpu, FiGitBranch } from 'react-icons/fi';
+import { FiMenu, FiX, FiLogOut, FiUser, FiHome, FiCalendar, FiFileText, FiShoppingBag, FiTrash2, FiCamera, FiActivity, FiBell, FiSettings, FiSun, FiMoon, FiMonitor, FiCpu, FiGitBranch, FiPlus } from 'react-icons/fi';
 import logo from '../../assets/medastrax-logo-new.png';
 import toast from 'react-hot-toast';
 import { familyMemberAPI, fileAPI, authAPI, notificationAPI } from '../../services/api';
@@ -799,6 +799,56 @@ export default function Navbar() {
                           )}
                         </>
                       )}
+
+                      {isPatient && (
+                        <>
+                          <div className="profile-dropdown-divider"></div>
+                          <div style={{ padding: '6px 16px', fontSize: '0.72rem', fontWeight: 'bold', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
+                            SWITCH PROFILE
+                          </div>
+                          
+                          <button 
+                            className={`profile-dropdown-item ${!activeProfile ? 'active' : ''}`}
+                            onClick={() => { switchProfile(null); setShowProfileDropdown(false); }}
+                            style={{ background: !activeProfile ? 'rgba(0, 217, 166, 0.08)' : 'none', fontWeight: !activeProfile ? 'bold' : 'normal' }}
+                          >
+                            <FiUser className="item-icon" /> Myself ({user?.name})
+                          </button>
+                          
+                          {familyMembers && familyMembers.map((member) => (
+                            <button 
+                              key={member.id}
+                              className={`profile-dropdown-item ${activeProfile?.id === member.id ? 'active' : ''}`}
+                              onClick={() => { switchProfile(member); setShowProfileDropdown(false); }}
+                              style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                width: '100%',
+                                background: activeProfile?.id === member.id ? 'rgba(0, 217, 166, 0.08)' : 'none',
+                                fontWeight: activeProfile?.id === member.id ? 'bold' : 'normal'
+                              }}
+                            >
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <FiUser className="item-icon" /> {member.name}
+                              </span>
+                              <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{member.relation}</span>
+                            </button>
+                          ))}
+
+                          <button 
+                            className="profile-dropdown-item" 
+                            onClick={() => { setShowProfileDropdown(false); setShowAddUserModal(true); }}
+                            style={{ color: 'var(--primary)', fontWeight: 'bold' }}
+                          >
+                            <FiPlus className="item-icon" /> Add Family Member
+                          </button>
+                        </>
+                      )}
+                      
+                      <div className="profile-dropdown-divider"></div>
+                      <button className="profile-dropdown-item danger" onClick={handleLogout}>
+                        <FiLogOut className="item-icon" style={{ color: 'var(--danger)' }} /> Logout
+                      </button>
                     </div>
                   )}
                 </div>
@@ -809,107 +859,7 @@ export default function Navbar() {
                   style={{ display: 'none' }} 
                   onChange={handleAvatarChange} 
                 />
-                {isPatient && (
-                  <>
-                    <button onClick={() => setShowAddUserModal(true)} className="btn btn-ghost btn-sm add-user-btn">
-                      <FiUser /> Add User
-                    </button>
-                    {familyMembers && familyMembers.length > 0 && (
-                      <div className="profile-switcher-container" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <button onClick={() => setShowUserSwitcher(!showUserSwitcher)} className="btn btn-ghost btn-sm show-users-btn">
-                          <FiUser /> Show Users
-                        </button>
-                        {showUserSwitcher && (
-                          <div className="profile-switcher-dropdown" style={{ padding: 0 }}>
-                            <div
-                              onClick={() => {
-                                switchProfile(null);
-                                setShowUserSwitcher(false);
-                              }}
-                              className={`profile-switcher-item-wrapper ${!activeProfile ? 'active' : ''}`}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '12px 16px',
-                                cursor: 'pointer',
-                                borderBottom: '1px solid var(--border-color)',
-                                background: !activeProfile ? 'rgba(0, 217, 166, 0.05)' : 'none',
-                                width: '100%',
-                              }}
-                            >
-                              <span style={{ fontSize: '0.85rem', fontWeight: !activeProfile ? '600' : '500', color: 'var(--text-primary)' }}>
-                                Myself ({user?.name})
-                              </span>
-                            </div>
-                            {familyMembers.map((member) => (
-                              <div
-                                key={member.id}
-                                className={`profile-switcher-item-wrapper ${activeProfile?.id === member.id ? 'active' : ''}`}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  width: '100%',
-                                  padding: '10px 16px',
-                                  borderBottom: '1px solid var(--border-color)',
-                                  cursor: 'pointer',
-                                  background: activeProfile?.id === member.id ? 'rgba(0, 217, 166, 0.05)' : 'none',
-                                }}
-                                onClick={() => {
-                                  switchProfile(member);
-                                  setShowUserSwitcher(false);
-                                }}
-                              >
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                  <span style={{ fontSize: '0.85rem', fontWeight: activeProfile?.id === member.id ? '600' : '500', color: 'var(--text-primary)' }}>
-                                    {member.name}
-                                  </span>
-                                  <span className="profile-relation" style={{ width: 'fit-content' }}>
-                                    {member.relation}
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm(`Are you sure you want to delete ${member.name}?`)) {
-                                      try {
-                                        await familyMemberAPI.delete(member.id);
-                                        toast.success('Family member removed');
-                                        if (activeProfile?.id === member.id) {
-                                          switchProfile(null);
-                                        }
-                                        await refreshFamilyMembers();
-                                      } catch (err) {
-                                        const errMsg = err.response?.data?.message || err.message || 'Failed to remove family member';
-                                        toast.error(errMsg);
-                                      }
-                                    }
-                                  }}
-                                  style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--danger)',
-                                    cursor: 'pointer',
-                                    padding: '6px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderRadius: '50%',
-                                    transition: 'background 0.2s',
-                                  }}
-                                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)')}
-                                  onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
-                                >
-                                  <FiTrash2 size={14} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
+
                 <button onClick={handleLogout} className="btn btn-ghost btn-sm logout-btn">
                   <FiLogOut />
                   <span>Logout</span>
