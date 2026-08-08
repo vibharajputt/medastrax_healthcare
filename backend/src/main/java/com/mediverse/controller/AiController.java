@@ -38,6 +38,9 @@ import com.mediverse.model.User;
 import com.mediverse.service.AuthService;
 import com.mediverse.security.JwtTokenProvider;
 import com.mediverse.service.MedGammaService;
+import com.mediverse.service.ToolRunLogService;
+import com.mediverse.service.ActivityLogService;
+import com.mediverse.model.ActivityLog;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
@@ -64,6 +67,33 @@ public class AiController {
 
     @Autowired
     private JwtTokenProvider tokenProvider;
+
+    @Autowired
+    private ToolRunLogService toolRunLogService;
+
+    @Autowired
+    private ActivityLogService activityLogService;
+
+    private static final String[] SAFETY_KEYWORDS_CRITICAL = {
+        "overdose", "suicide", "self-harm", "self harm", "kill myself", "end my life",
+        "want to die", "poison myself"
+    };
+    private static final String[] SAFETY_KEYWORDS_HIGH = {
+        "severe chest pain", "heart attack", "stroke", "can't breathe", "cannot breathe",
+        "allergic reaction", "anaphylaxis", "heavy bleeding", "unconscious"
+    };
+
+    private String detectSafetyFlag(String message) {
+        if (message == null) return "NONE";
+        String lc = message.toLowerCase();
+        for (String kw : SAFETY_KEYWORDS_CRITICAL) {
+            if (lc.contains(kw)) return "CRITICAL";
+        }
+        for (String kw : SAFETY_KEYWORDS_HIGH) {
+            if (lc.contains(kw)) return "HIGH";
+        }
+        return "NONE";
+    }
 
     @Value("${app.huggingface.token:}")
     private String hfToken;
@@ -156,11 +186,20 @@ public class AiController {
         // Trim history if too long
         trimHistory(conversationHistory);
 
+        // Safety flag detection
+        String safetyFlag = detectSafetyFlag(userMessage);
+
+        // Log tool run for observability
+        toolRunLogService.logRun(null, "AI_CHAT", userMessage,
+                reply.length() > 200 ? reply.substring(0, 200) : reply,
+                null, !reply.startsWith("⚠️"), null, "Chat response generated");
+
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("success", true);
         response.put("reply", reply);
         response.put("sessionId", sessionId);
         response.put("model", modelUsed);
+        response.put("safetyFlag", safetyFlag);
         return ResponseEntity.ok(response);
     }
 
