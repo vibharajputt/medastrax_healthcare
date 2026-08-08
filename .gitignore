@@ -19,3 +19,4 @@ uploads/
 mediverse-main/
 scratch/
 *.zip
+application-secret.properties  

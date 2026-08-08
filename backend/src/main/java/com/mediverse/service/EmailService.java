@@ -23,18 +23,7 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String officialEmail;
 
-    @jakarta.annotation.PostConstruct
-    public void configureMailSender() {
-        if (mailSender instanceof org.springframework.mail.javamail.JavaMailSenderImpl) {
-            org.springframework.mail.javamail.JavaMailSenderImpl impl = (org.springframework.mail.javamail.JavaMailSenderImpl) mailSender;
-            String username = impl.getUsername();
-            if (username != null && username.contains("@gmail.com")) {
-                impl.setHost("smtp.gmail.com");
-                impl.setPort(587);
-                logger.info("🔧 Automatically configured JavaMailSender to use Gmail SMTP (smtp.gmail.com:587) based on username: {}", username);
-            }
-        }
-    }
+
 
     public void sendContactEmails(ContactFormRequest request) {
         try {
