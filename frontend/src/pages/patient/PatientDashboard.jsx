@@ -24,6 +24,7 @@ import {
   FiDownload,
   FiCopy,
   FiUser
+} from 'react-icons/fi';
 import { hospitalAPI, aiAPI, authAPI, rewardsAPI, emergencyAPI, bookingAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { jsPDF } from 'jspdf';
