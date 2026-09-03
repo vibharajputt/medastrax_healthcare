@@ -28,7 +28,6 @@ import TrackAmbulancePage from './pages/patient/TrackAmbulancePage';
 
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
 
-import HealthRecordsPage from './pages/patient/HealthRecordsPage';
 import ConsultationRoom from './pages/ConsultationRoom';
 import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard';
 import LabDashboard from './pages/lab/LabDashboard';
@@ -191,11 +190,6 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              <Route path="/health-records" element={
-                <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN', 'REVIEWER']}>
-                  <HealthRecordsPage />
-                </ProtectedRoute>
-              } />
               <Route path="/doctor/dashboard" element={
                 <ProtectedRoute allowedRoles={['DOCTOR']}>
                   <DoctorDashboard />

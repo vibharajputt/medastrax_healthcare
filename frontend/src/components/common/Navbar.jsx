@@ -539,7 +539,6 @@ export default function Navbar() {
           { path: '/dashboard', label: 'Hospitals', icon: <FiHome /> },
           { path: '/my-bookings', label: 'My Bookings', icon: <FiCalendar /> },
           { path: '/my-prescriptions', label: 'Prescriptions', icon: <FiFileText /> },
-          { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
           { path: 'notifications', label: 'Important', icon: <FiBell /> },
         ];
       }
@@ -547,7 +546,6 @@ export default function Navbar() {
         return [
           { path: '/doctor/dashboard', label: 'Dashboard', icon: <FiHome /> },
           { path: 'doctor-schedule', label: 'Schedule', icon: <FiCalendar /> },
-          { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
           { path: 'notifications', label: 'Important', icon: <FiBell /> },
         ];
       }
@@ -559,7 +557,6 @@ export default function Navbar() {
       if (user?.role === 'ADMIN') {
         return [
           { path: '/admin/dashboard', label: 'Dashboard', icon: <FiHome /> },
-          { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
         ];
       }
       if (user?.role === 'LAB') {

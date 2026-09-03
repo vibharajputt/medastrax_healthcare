@@ -96,8 +96,6 @@ export const bookingAPI = {
   updateAiReport: (id, aiReport) => api.put(`/bookings/${id}/ai-report`, { aiReport }),
   reschedule: (id, date, timeSlot) =>
     api.put(`/bookings/${id}/reschedule?date=${date}&timeSlot=${encodeURIComponent(timeSlot)}`),
-  updateFollowUp: (id, data) => api.put(`/bookings/${id}/follow-up`, data),
-  getRoleRecords: (role, status) => api.get(`/bookings/role-records?role=${role}${status ? `&status=${status}` : ''}`),
 };
 
 export const prescriptionAPI = {
