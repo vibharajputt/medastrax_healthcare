@@ -115,7 +115,7 @@ export default function MyPrescriptions() {
       <style>{`
         .prescriptions-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
           gap: 24px;
         }
 
@@ -164,9 +164,46 @@ export default function MyPrescriptions() {
           font-weight: 600;
         }
 
+        .prescription-card-footer {
+          margin-top: auto;
+          padding-top: 14px;
+          border-top: 1px solid var(--border-color);
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .prescription-footer-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .prescription-actions-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+        }
+
+        .prescription-actions-row .btn {
+          flex: 1 1 140px;
+          white-space: nowrap;
+          justify-content: center;
+          padding: 8px 14px;
+          font-size: 0.82rem;
+          min-height: 36px;
+        }
+
         @media (max-width: 640px) {
           .prescriptions-grid {
             grid-template-columns: 1fr;
+          }
+          .prescription-actions-row .btn {
+            flex: 1 1 100%;
           }
         }
       `}</style>
@@ -339,62 +376,69 @@ export default function MyPrescriptions() {
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid var(--border-color)', gap: '10px' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: #{p.id}</span>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      {hasAttachment && (
-                        <a 
-                          href={`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : ''}${attachmentUrl}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="btn btn-primary btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', textDecoration: 'none', padding: '6px 12px', height: '32px', fontSize: '0.8rem', borderRadius: '4px' }}
-                        >
-                          <FiFileText /> View File
-                        </a>
-                      )}
-                      {p.aiSummary && (
+                  {/* Actions Footer */}
+                  <div className="prescription-card-footer">
+                    <div className="prescription-footer-meta">
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>ID: #{p.id}</span>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {hasAttachment && (
+                          <a 
+                            href={`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : ''}${attachmentUrl}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-outline btn-sm"
+                            style={{ padding: '4px 10px', fontSize: '0.75rem', minHeight: '30px' }}
+                          >
+                            <FiFileText size={12} /> View File
+                          </a>
+                        )}
+                        {p.aiSummary && (
+                          <button 
+                            onClick={() => {
+                              setSelectedLabSummary(p.aiSummary);
+                              setSelectedLabPatient(p.patientName || activeProfile?.name || 'Patient');
+                              setSelectedLabTests(p.tests ? (p.tests.startsWith('[') ? JSON.parse(p.tests).join(', ') : p.tests) : 'Diagnostics');
+                              setSummaryTab('patient');
+                            }}
+                            className="btn btn-outline btn-sm"
+                            style={{ padding: '4px 10px', fontSize: '0.75rem', minHeight: '30px', color: 'var(--primary)', borderColor: 'rgba(0,217,166,0.3)' }}
+                          >
+                            <FiEye size={12} /> Lab Summary
+                          </button>
+                        )}
                         <button 
-                          onClick={() => {
-                            setSelectedLabSummary(p.aiSummary);
-                            setSelectedLabPatient(p.patientName || activeProfile?.name || 'Patient');
-                            setSelectedLabTests(p.tests ? (p.tests.startsWith('[') ? JSON.parse(p.tests).join(', ') : p.tests) : 'Diagnostics');
-                            setSummaryTab('patient');
-                          }}
+                          onClick={() => handleAnalyzePrescription(p.id)}
                           className="btn btn-outline btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '32px', fontSize: '0.8rem', color: 'var(--primary)', borderColor: 'rgba(0,217,166,0.3)' }}
+                          disabled={loadingAnalysisId === p.id}
+                          style={{ padding: '4px 10px', fontSize: '0.75rem', minHeight: '30px' }}
                         >
-                          <FiEye /> Lab Summary
+                          <FiCpu size={12} /> {loadingAnalysisId === p.id ? 'Analyzing...' : 'AI Report'}
                         </button>
-                      )}
-                      <button 
-                        onClick={() => handleAnalyzePrescription(p.id)}
-                        className="btn btn-outline btn-sm"
-                        disabled={loadingAnalysisId === p.id}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '32px', fontSize: '0.8rem' }}
-                      >
-                        <FiCpu /> {loadingAnalysisId === p.id ? 'Analyzing...' : 'AI Report'}
-                      </button>
-                      {medicines.length > 0 && (
-                        <button 
-                          onClick={() => navigate(`/order-prescription/${p.id}`)}
-                          className="btn btn-primary btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '32px', fontSize: '0.8rem', background: 'var(--primary)', fontWeight: 700 }}
-                        >
-                          <FiShoppingBag size={13} /> Order Medicines
-                        </button>
-                      )}
-                      {tests.length > 0 && (
-                        <button 
-                          onClick={() => navigate(`/book-diagnostic/${p.id}`)}
-                          className="btn btn-primary btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '32px', fontSize: '0.8rem', background: '#ec4899', border: 'none', color: '#fff', fontWeight: 700 }}
-                        >
-                          <FiActivity size={13} /> Contact Diagnostic Lab
-                        </button>
-                      )}
+                      </div>
                     </div>
+
+                    {(medicines.length > 0 || tests.length > 0) && (
+                      <div className="prescription-actions-row">
+                        {medicines.length > 0 && (
+                          <button 
+                            onClick={() => navigate(`/order-prescription/${p.id}`)}
+                            className="btn btn-primary btn-sm"
+                            style={{ fontWeight: 700 }}
+                          >
+                            <FiShoppingBag size={14} /> Order Medicines
+                          </button>
+                        )}
+                        {tests.length > 0 && (
+                          <button 
+                            onClick={() => navigate(`/book-diagnostic/${p.id}`)}
+                            className="btn btn-sm"
+                            style={{ background: 'linear-gradient(135deg, #ec4899, #db2777)', border: 'none', color: '#fff', fontWeight: 700, boxShadow: '0 4px 12px rgba(236, 72, 153, 0.25)' }}
+                          >
+                            <FiActivity size={14} /> Contact Diagnostic Lab
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                 </motion.div>
