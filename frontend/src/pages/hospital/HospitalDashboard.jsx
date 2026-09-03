@@ -28,18 +28,18 @@ export default function HospitalDashboard() {
   const [availableBedsInput, setAvailableBedsInput] = useState(0);
 
   useEffect(() => {
-    if (user.hospitalId) {
+    if (user?.hospitalId) {
       fetchHospitalData();
     } else {
       setLoading(false);
       setLoadingDoctors(false);
     }
-  }, [user.hospitalId]);
+  }, [user?.hospitalId]);
 
   const fetchHospitalData = async () => {
     try {
       setLoading(true);
-      const res = await hospitalAPI.getById(user.hospitalId);
+      const res = await hospitalAPI.getById(user?.hospitalId);
       setHospital(res.data);
       setAvailableBedsInput(res.data.availableBeds);
       
@@ -96,7 +96,7 @@ export default function HospitalDashboard() {
     );
   }
 
-  if (!user.hospitalId || !hospital) {
+  if (!user?.hospitalId || !hospital) {
     return (
       <div className="page-container section">
         <div className="empty-state glass-card">
