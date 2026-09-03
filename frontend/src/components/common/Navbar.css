@@ -79,49 +79,54 @@
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 2px;
-  flex-shrink: 1;
-  min-width: 0;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .nav-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 7px;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
   text-decoration: none;
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 500;
   transition: all var(--transition-normal);
-  flex-shrink: 1;
-  white-space: normal;
-  word-break: keep-all;
-  overflow-wrap: break-word;
-  line-height: 1.2;
-  text-align: center;
-  max-width: 105px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.nav-link svg {
+  font-size: 1.05rem;
+  flex-shrink: 0;
 }
 
 .nav-link:hover {
   color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .nav-link.active {
   color: var(--primary);
   background: rgba(0, 217, 166, 0.1);
+  font-weight: 600;
 }
 
 .notification-link {
   position: relative;
-  background: rgba(255, 244, 229, 0.95);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #d97706;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .notification-link:hover {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
 }
 
 .nav-notification-badge {
@@ -365,16 +370,23 @@
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.user-info:hover {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .user-details {
@@ -396,6 +408,17 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
   white-space: nowrap;
 }
 
@@ -448,14 +471,14 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   flex-shrink: 0;
 }
 
 .navbar-actions-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
