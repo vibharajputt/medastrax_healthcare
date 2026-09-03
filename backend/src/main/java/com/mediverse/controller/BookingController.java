@@ -18,8 +18,6 @@ import com.mediverse.model.Booking;
 import com.mediverse.model.User;
 import com.mediverse.model.PatientProfile;
 import com.mediverse.security.JwtTokenProvider;
-import com.mediverse.service.ActivityLogService;
-import com.mediverse.model.ActivityLog;
 import com.mediverse.service.AuthService;
 import com.mediverse.service.BookingService;
 
@@ -36,9 +34,6 @@ public class BookingController {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
-    @Autowired
-    private ActivityLogService activityLogService;
-
     @PostMapping
     public ResponseEntity<?> createBooking(
             @Valid @RequestBody BookingRequest request,
@@ -46,11 +41,6 @@ public class BookingController {
         try {
             Long patientId = extractUserId(authHeader);
             Booking booking = bookingService.createBooking(request, patientId);
-
-            activityLogService.log(patientId, ActivityLog.EventType.BOOKING_CREATED,
-                    "Booked appointment with Dr. " + booking.getDoctor().getName() +
-                    " at " + booking.getHospital().getName() +
-                    " on " + booking.getBookingDate(), booking.getId(), "BOOKING");
 
             Map<String, Object> data = new HashMap<>();
             data.put("id", booking.getId());

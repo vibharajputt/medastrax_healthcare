@@ -540,9 +540,6 @@ export default function Navbar() {
           { path: '/my-bookings', label: 'My Bookings', icon: <FiCalendar /> },
           { path: '/my-prescriptions', label: 'Prescriptions', icon: <FiFileText /> },
           { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
-          { path: '/activity', label: 'History', icon: <FiActivity /> },
-          { path: '/background-jobs', label: 'Tasks', icon: <FiCpu /> },
-          { path: '/workflows', label: 'Workflows', icon: <FiGitBranch /> },
           { path: 'notifications', label: 'Important', icon: <FiBell /> },
         ];
       }
@@ -551,7 +548,6 @@ export default function Navbar() {
           { path: '/doctor/dashboard', label: 'Dashboard', icon: <FiHome /> },
           { path: 'doctor-schedule', label: 'Schedule', icon: <FiCalendar /> },
           { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
-          { path: '/observability', label: 'Observability', icon: <FiActivity /> },
           { path: 'notifications', label: 'Important', icon: <FiBell /> },
         ];
       }
@@ -564,7 +560,6 @@ export default function Navbar() {
         return [
           { path: '/admin/dashboard', label: 'Dashboard', icon: <FiHome /> },
           { path: '/health-records', label: 'Health Records', icon: <FiFileText /> },
-          { path: '/observability', label: 'Observability', icon: <FiActivity /> },
         ];
       }
       if (user?.role === 'LAB') {

@@ -188,30 +188,4 @@ export const emergencyAPI = {
   triggerSOS: (data) => api.post('/sos', data),
 };
 
-export const activityAPI = {
-  getHistory: (page = 0, size = 20, type = 'ALL') =>
-    api.get(`/activity?page=${page}&size=${size}&type=${type}`),
-  getRecent: () => api.get('/activity/recent'),
-};
-
-export const jobsAPI = {
-  submit: (jobType, input) => api.post('/jobs/submit', { jobType, input }),
-  getJobs: (page = 0, size = 10) => api.get(`/jobs?page=${page}&size=${size}`),
-  retryJob: (jobId) => api.post(`/jobs/${jobId}/retry`),
-};
-
-export const observabilityAPI = {
-  getRuns: (page = 0, size = 20) => api.get(`/observability/runs?page=${page}&size=${size}`),
-  getStats: () => api.get('/observability/stats'),
-};
-
-export const workflowAPI = {
-  start: (workflowType, data) => api.post('/workflows/start', { workflowType, ...data }),
-  getWorkflows: (page = 0, size = 10) => api.get(`/workflows?page=${page}&size=${size}`),
-  approveStep: (workflowId, stepIndex) => api.post(`/workflows/${workflowId}/approve/${stepIndex}`),
-  rejectStep: (workflowId, stepIndex, reason) =>
-    api.post(`/workflows/${workflowId}/reject/${stepIndex}`, { reason }),
-  getPendingCount: () => api.get('/workflows/pending-count'),
-};
-
 export default api;

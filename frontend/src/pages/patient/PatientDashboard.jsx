@@ -24,9 +24,7 @@ import {
   FiDownload,
   FiCopy,
   FiUser
-} from 'react-icons/fi';
-import { hospitalAPI, aiAPI, authAPI, rewardsAPI, emergencyAPI, bookingAPI, activityAPI, jobsAPI, workflowAPI } from '../../services/api';
-import { getOfflineAiResponse } from '../../services/offlineAi';
+import { hospitalAPI, aiAPI, authAPI, rewardsAPI, emergencyAPI, bookingAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
@@ -93,37 +91,7 @@ export default function PatientDashboard() {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
 
-  // Bounty Features Widgets States
-  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
-  const [activeJobs, setActiveJobs] = useState([]);
-  const [recentActivities, setRecentActivities] = useState([]);
 
-  const fetchPendingApprovals = async () => {
-    try {
-      const res = await workflowAPI.getPendingCount();
-      setPendingApprovalsCount(res.data.pendingApprovals || 0);
-    } catch (e) {
-      console.warn('Failed to load pending approvals count', e);
-    }
-  };
-
-  const fetchActiveJobs = async () => {
-    try {
-      const res = await jobsAPI.getJobs(0, 5);
-      setActiveJobs(res.data.data || []);
-    } catch (e) {
-      console.warn('Failed to load active jobs', e);
-    }
-  };
-
-  const fetchRecentActivities = async () => {
-    try {
-      const res = await activityAPI.getRecent();
-      setRecentActivities(res.data.data || []);
-    } catch (e) {
-      console.warn('Failed to load recent activities', e);
-    }
-  };
 
 
 
@@ -570,14 +538,6 @@ export default function PatientDashboard() {
     fetchProfile();
     fetchLeaderboard();
     fetchBookings();
-    fetchPendingApprovals();
-    fetchActiveJobs();
-    fetchRecentActivities();
-    const timer = setInterval(() => {
-      fetchActiveJobs();
-      fetchPendingApprovals();
-    }, 10000);
-    return () => clearInterval(timer);
   }, [activeProfile]);
 
 

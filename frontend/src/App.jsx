@@ -28,12 +28,7 @@ import TrackAmbulancePage from './pages/patient/TrackAmbulancePage';
 
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
 
-import ActivityHistoryPage from './pages/patient/ActivityHistoryPage';
-import BackgroundJobsPage from './pages/patient/BackgroundJobsPage';
-import WorkflowsPage from './pages/patient/WorkflowsPage';
-import ObservabilityDashboard from './pages/admin/ObservabilityDashboard';
 import HealthRecordsPage from './pages/patient/HealthRecordsPage';
-
 import ConsultationRoom from './pages/ConsultationRoom';
 import PharmacyDashboard from './pages/pharmacy/PharmacyDashboard';
 import LabDashboard from './pages/lab/LabDashboard';
@@ -196,32 +191,11 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              <Route path="/activity" element={
-                <ProtectedRoute allowedRoles={['PATIENT']}>
-                  <ActivityHistoryPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/background-jobs" element={
-                <ProtectedRoute allowedRoles={['PATIENT']}>
-                  <BackgroundJobsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/workflows" element={
-                <ProtectedRoute allowedRoles={['PATIENT']}>
-                  <WorkflowsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/observability" element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'DOCTOR']}>
-                  <ObservabilityDashboard />
-                </ProtectedRoute>
-              } />
               <Route path="/health-records" element={
                 <ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN', 'REVIEWER']}>
                   <HealthRecordsPage />
                 </ProtectedRoute>
               } />
-
               <Route path="/doctor/dashboard" element={
                 <ProtectedRoute allowedRoles={['DOCTOR']}>
                   <DoctorDashboard />
