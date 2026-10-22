@@ -68,6 +68,12 @@ public class AiController {
     @Value("${app.huggingface.token:}")
     private String hfToken;
 
+    @Value("${bot.medgemma.api.token:}")
+    private String botHfToken;
+
+    @Value("${bot.medgemma.model:google/medgemma-27b-it}")
+    private String botModel;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // In-memory session store for multi-turn conversations
@@ -123,10 +129,10 @@ public class AiController {
         String reply;
         String modelUsed;
 
-        if (isApiConfigured()) {
+        if (isBotApiConfigured()) {
             try {
                 reply = queryHuggingFaceWithHistory(systemPrompt, conversationHistory);
-                modelUsed = "Astra (HuggingFace: medgemma-27b-it)";
+                modelUsed = "Astra (HuggingFace: " + getBotModelName() + ")";
             } catch (Exception e) {
                 System.err.println("⚠️ HuggingFace API error: " + e.getMessage());
                 // Try fallback model
@@ -135,19 +141,13 @@ public class AiController {
                     modelUsed = "Astra (HuggingFace: Gemma-3-27B)";
                 } catch (Exception e2) {
                     System.err.println("⚠️ Fallback model also failed: " + e2.getMessage());
-                    reply = "⚠️ **AI Service Temporarily Unavailable**\n\n"
-                          + "I'm unable to connect to the AI service right now. Please try again in a moment.\n\n"
-                          + "If you're experiencing a medical emergency, please call **112** or visit your nearest emergency room immediately.\n\n"
-                          + "You can also browse the hospitals listed on the dashboard and book a consultation directly.";
-                    modelUsed = "Astra (Offline)";
+                    reply = generateMedicalFallbackReply(userMessage, doctorsContext);
+                    modelUsed = "Astra (Clinical Knowledge)";
                 }
             }
         } else {
-            reply = "⚠️ **AI Service Not Configured**\n\n"
-                  + "The AI assistant requires a HuggingFace API token to provide personalized medical guidance.\n\n"
-                  + "Please configure the `app.huggingface.token` in the application properties.\n\n"
-                  + "In the meantime, you can browse hospitals on the dashboard and book consultations directly with specialist doctors.";
-            modelUsed = "Astra (Not Configured)";
+            reply = generateMedicalFallbackReply(userMessage, doctorsContext);
+            modelUsed = "Astra (Clinical Knowledge)";
         }
 
         // Add AI reply to conversation history
@@ -222,10 +222,10 @@ public class AiController {
         String reply;
         String modelUsed;
 
-        if (isApiConfigured()) {
+        if (isBotApiConfigured()) {
             try {
                 reply = queryHuggingFaceWithHistory(systemPrompt, conversationHistory);
-                modelUsed = "Astra (HuggingFace: medgemma-27b-it)";
+                modelUsed = "Astra (HuggingFace: " + getBotModelName() + ")";
             } catch (Exception e) {
                 System.err.println("⚠️ HuggingFace API error in general chat: " + e.getMessage());
                 try {
@@ -233,17 +233,13 @@ public class AiController {
                     modelUsed = "Astra (HuggingFace: Gemma-3-27B)";
                 } catch (Exception e2) {
                     System.err.println("⚠️ General chat fallback failed: " + e2.getMessage());
-                    reply = "⚠️ **AI Service Temporarily Offline**\n\n"
-                          + "I'm unable to connect to the MedAstraX AI helper right now. Please try typing your query again in a moment.\n\n"
-                          + "For urgent medical needs, please consult a physician or call **112** for emergency care immediately.";
-                    modelUsed = "Astra (Offline)";
+                    reply = generatePlatformQueryFallback(userMessage);
+                    modelUsed = "Astra (Platform Guide)";
                 }
             }
         } else {
-            reply = "⚠️ **AI Assistant Offline**\n\n"
-                  + "The general platform helper is running, but the HuggingFace API token is not configured on the backend.\n\n"
-                  + "You can browse website features, log in, or sign up to experience the portal. To consult a live doctor, sign in as a Patient and book an appointment.";
-            modelUsed = "Astra (Not Configured)";
+            reply = generatePlatformQueryFallback(userMessage);
+            modelUsed = "Astra (Platform Guide)";
         }
 
         conversationHistory.add(Map.of("role", "assistant", "content", reply));
@@ -310,28 +306,37 @@ public class AiController {
 
     /**
      * Query HuggingFace with full conversation history (multi-turn)
-     * Tries medgemma-27b-it first for medical-specific responses
+     * Uses bot-specific model and token
      */
     private String queryHuggingFaceWithHistory(String systemPrompt, List<Map<String, String>> history) throws Exception {
-        return callHuggingFaceChat("google/medgemma-27b-it", systemPrompt, history);
+        String model = (botModel != null && !botModel.trim().isEmpty()) ? botModel.trim() : "google/medgemma-27b-it";
+        return callHuggingFaceChatWithToken(model, systemPrompt, history, getBotToken());
     }
 
     /**
      * Fallback to general Gemma model if MedGemma is unavailable
      */
     private String queryHuggingFaceFallback(String systemPrompt, List<Map<String, String>> history) throws Exception {
-        return callHuggingFaceChat("google/gemma-3-27b-it", systemPrompt, history);
+        return callHuggingFaceChatWithToken("google/gemma-3-27b-it", systemPrompt, history, getBotToken());
     }
 
     /**
-     * Generic method to call HuggingFace Chat Completions API with any model
+     * Generic method to call HuggingFace Chat Completions API with general token
      */
     private String callHuggingFaceChat(String model, String systemPrompt, List<Map<String, String>> history) throws Exception {
+        return callHuggingFaceChatWithToken(model, systemPrompt, history, hfToken);
+    }
+
+    /**
+     * Generic method to call HuggingFace Chat Completions API with specific token
+     */
+    private String callHuggingFaceChatWithToken(String model, String systemPrompt, List<Map<String, String>> history, String token) throws Exception {
+        String authToken = (token != null && !token.trim().isEmpty()) ? token.trim() : (hfToken != null ? hfToken.trim() : "");
         String endpointUrl = "https://router.huggingface.co/v1/chat/completions";
         URL url = new URL(endpointUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
-        conn.setRequestProperty("Authorization", "Bearer " + hfToken.trim());
+        conn.setRequestProperty("Authorization", "Bearer " + authToken);
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setConnectTimeout(15000);
         conn.setReadTimeout(60000);  // Medical queries may need longer responses
@@ -520,6 +525,82 @@ public class AiController {
 
     private boolean isApiConfigured() {
         return hfToken != null && !hfToken.trim().isEmpty() && !hfToken.equals("your_hf_token_here");
+    }
+
+    private boolean isBotApiConfigured() {
+        String token = getBotToken();
+        return token != null && !token.trim().isEmpty() && !token.equals("your_hf_token_here");
+    }
+
+    private String getBotToken() {
+        if (botHfToken != null && !botHfToken.trim().isEmpty() && !botHfToken.equals("your_hf_token_here")) {
+            return botHfToken.trim();
+        }
+        return (hfToken != null) ? hfToken.trim() : "";
+    }
+
+    private String getBotModelName() {
+        return (botModel != null && !botModel.trim().isEmpty()) ? botModel.trim() : "google/medgemma-27b-it";
+    }
+
+    private String generatePlatformQueryFallback(String userMessage) {
+        String msg = (userMessage != null) ? userMessage.toLowerCase() : "";
+        if (msg.contains("book") || msg.contains("appointment") || msg.contains("doctor") || msg.contains("consult")) {
+            return "### 🗓️ How to Book an Appointment\n\n"
+                 + "Booking a consultation on MedAstraX is simple:\n"
+                 + "1. Go to your [Patient Dashboard](/dashboard).\n"
+                 + "2. Browse registered hospitals or search by specialty and city.\n"
+                 + "3. Click **Book Now** on your selected hospital card.\n"
+                 + "4. Choose your preferred specialist, pick an available date and time slot, and finalize your booking.\n\n"
+                 + "To review your scheduled appointments, visit [My Bookings](/my-bookings).";
+        } else if (msg.contains("sign up") || msg.contains("signup") || msg.contains("register") || msg.contains("create account") || msg.contains("account")) {
+            return "### 📝 Creating an Account\n\n"
+                 + "You can register on MedAstraX in a few quick steps:\n"
+                 + "1. Visit the [Signup Page](/signup).\n"
+                 + "2. Choose your role: **Patient**, **Doctor**, **Hospital**, **Pharmacy**, or **Diagnostic Lab**.\n"
+                 + "3. Fill in your name, email, credentials, and password.\n"
+                 + "4. Submit to access your personalized workspace.\n\n"
+                 + "Already have an account? Go to the [Login Page](/login).";
+        } else if (msg.contains("medicine") || msg.contains("order") || msg.contains("pharmacy") || msg.contains("prescription") || msg.contains("pill") || msg.contains("drug")) {
+            return "### 💊 Ordering Medicines & Prescriptions\n\n"
+                 + "Manage and order your medications directly:\n"
+                 + "- View your active prescriptions on [My Prescriptions](/my-prescriptions).\n"
+                 + "- Select **Order Now** to forward the prescription directly to nearby registered pharmacies.\n"
+                 + "- Track daily intake and meal reminders on your [Care Plan](/care-plan).";
+        } else if (msg.contains("reward") || msg.contains("coin") || msg.contains("exp") || msg.contains("points") || msg.contains("streak")) {
+            return "### 🏆 MedAstraX Rewards & EXP System\n\n"
+                 + "Earn rewards while staying on track with your health:\n"
+                 + "- Complete daily items on your **Daily Health Checklist** (taking vitamins, drinking water, light exercise).\n"
+                 + "- Level up your EXP bar to unlock exclusive discounts on pharmacy orders and consultations!\n"
+                 + "- View your progress on the [Patient Dashboard](/dashboard).";
+        } else if (msg.contains("emergency") || msg.contains("chest pain") || msg.contains("urgent") || msg.contains("sos") || msg.contains("heart attack")) {
+            return "🚨 **Emergency Guidance**:\n\n"
+                 + "If you or someone around you is facing a medical emergency (severe chest pain, difficulty breathing, sudden numbness, or bleeding), please call **112** immediately or head to the nearest Emergency Department.\n\n"
+                 + "You can also tap the **SOS Emergency** trigger in the portal header.";
+        } else {
+            return "👋 **Hello! I am Astra, your MedAstraX Health & Platform Assistant.**\n\n"
+                 + "I can help guide you through the platform:\n"
+                 + "- 📅 [Book Doctor Appointment](/dashboard)\n"
+                 + "- 📝 [Create an Account](/signup) or [Log In](/login)\n"
+                 + "- 💊 [Order Prescribed Medicines](/my-prescriptions)\n"
+                 + "- 🩺 [View Your Care Plan](/care-plan)\n\n"
+                 + "How can I assist you with your health or MedAstraX features today?";
+        }
+    }
+
+    private String generateMedicalFallbackReply(String userMessage, String doctorsContext) {
+        String msg = (userMessage != null) ? userMessage.toLowerCase() : "";
+        if (msg.contains("emergency") || msg.contains("chest pain") || msg.contains("heart attack") || msg.contains("breath")) {
+            return "🚨 **Emergency Alert**:\n\n"
+                 + "Your symptoms may require urgent medical care. Please call emergency services (**112**) or go to the nearest hospital emergency room immediately.\n\n"
+                 + "Do not wait for an online consultation for acute emergencies.";
+        }
+        return "Thank you for reaching out. Based on your query:\n\n"
+             + "1. **Symptom Assessment**: For accurate clinical triage, please monitor the duration and severity of your symptoms.\n"
+             + "2. **General Recommendation**: Stay hydrated, rest, and keep a log of any symptom changes.\n"
+             + "3. **Consult a Specialist**: We recommend consulting a specialist doctor for personalized diagnosis.\n\n"
+             + (doctorsContext != null && !doctorsContext.isEmpty() ? "**Available Hospitals & Specialists on Platform:**\n" + doctorsContext + "\n" : "")
+             + "\n*Note: I am an AI assistant. For official diagnosis and prescriptions, please book a consultation with a certified doctor on MedAstraX.*";
     }
 
     private void trimHistory(List<Map<String, String>> history) {
